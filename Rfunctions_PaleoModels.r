@@ -49,7 +49,7 @@ writeKCH <- function(HSnum = 1,density = 1000){
 loadPackage <- function(pkg){
 
   if(pkg %in% rownames(installed.packages()) == FALSE) {suppressMessages(suppressWarnings(install.packages(pkg)))}
-  suppressMessages(suppressWarnings(require(pkg)))
+  eval(parse(text=sprintf("suppressMessages(suppressWarnings(require(%s)))",pkg)), envir= .GlobalEnv)
 
 }
 

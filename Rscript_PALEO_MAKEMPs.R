@@ -19,10 +19,11 @@ rm(list=ls())
 ######################
 	  
 KEVIN = TRUE
-if(KEVIN) BASE_DIRECTORY <- "C:\\Users\\Kevin\\Dropbox\\Damien Fordham\\Mammoth Model"
+DAMIEN = FALSE
 
-CODE_DIRECTORY <- paste(BASE_DIRECTORY,"\\rscripts",sep="")                     # directory for storing the r functions and scripts
-if(is.na(file.info(CODE_DIRECTORY)[1,"isdir"])) dir.create(CODE_DIRECTORY)
+if(KEVIN) BASE_DIRECTORY <- "C:\\Users\\Kevin\\Dropbox\\Damien Fordham\\Mammoth Model"      
+	                                                                            # code directory should be your local copy of the GitHub repository
+if(KEVIN) CODE_DIRECTORY <- "C:\\Users\\Kevin\\GIT\\paleo-models-sandbox"           # directory for storing the r functions and scripts
 
 DATA_DIRECTORY <- paste(BASE_DIRECTORY,"\\data",sep="")                         # directory for storing relevant data (CSV files)
 if(is.na(file.info(DATA_DIRECTORY)[1,"isdir"])) dir.create(DATA_DIRECTORY)
@@ -141,6 +142,7 @@ for(parm in 1:nVars){
   }
 }
 
+masterDF$dispndx <- as.numeric(cut(masterDF$DISP2,breaks=c(dispersalFunc.df$Distl,Inf)))   
 
 #############################
 #       GENERATE THE MP FILES
@@ -155,12 +157,10 @@ template <- mp.read(mpfilein)   # read in template
 ###########################################
          ## BUILD THE MP FILES
 
-masterDF$filenames <- character(1) 
-
-masterDF$dispndx <- as.numeric(cut(masterDF$DISP2,breaks=c(dispersalFunc.df$Distl,Inf)))                                 
+masterDF$filenames <- character(1)                              
 
 for(f in 1:NREPS){
-  filename <- sprintf("LHS_Sample%s.mp",i)
+  filename <- sprintf("LHS_Sample%s.mp",f)
   masterDF$filenames[f] <- filename 
 
      ### write out the KCH files for this model run (and get init abundances)   NOTE: KCH files are stored in the MP_DIRECTORY
@@ -242,14 +242,6 @@ for(f in 1:NREPS){
  
 }     # close loops through scenarios
 
-
-#### temporary: make new filenames storage variable
-
-fileVars$filenames <- character(nfiles)
-for(f in 1:nfiles){
-  fileVars$filenames[f] = paste("spatialTest",f,".mp",sep="")   
-}
-head(fileVars)
 
 ##########################
   ####           SAVE METADATA FOR EACH MP FILE TO FILE
