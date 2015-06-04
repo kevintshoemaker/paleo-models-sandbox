@@ -231,10 +231,8 @@ NPOPS <- 100
 
 
 
-write.csv(allVars,"AllVars.csv",row.names=F)
 
-
-###############
+###############  END SCRIPT
 ############
 ########
 ####
@@ -242,47 +240,6 @@ write.csv(allVars,"AllVars.csv",row.names=F)
 
 
 
-
-###############
-######  Calculate mean inter-colony distance...
-
-df <- read.csv("AllVars.csv",header=T)
-
-names(df)
-
-dispToDist <- function(disp){
-  ifelse(disp>0.0001, (log(func[1])-log(disp))*func[2], 
-      15)
-} 
-
-
-meannndist <- numeric(nrow(df))
-meandisp <- numeric(nrow(df)) 
-meanconn <- numeric(nrow(df))
-for(i in 1:length(filenames)){
-   temp <- mp.read(as.character(df$filenames[i]))   # read in the file 
-
-   
-   #  names(temp$mp.file)
-   func <- temp$mp.file$DispDistFunc
-   # curve(ifelse(x<10,func[1]*exp(-1*(x^func[3])/func[2]),0),0,15)
-   # curve((log(func[1])-log(x))*func[2],0,0.1)
-   DispMatr <- temp$mp.file$DispMatr
-   
-   temp_nnd <- apply(DispMatr,2,function(t) min(dispToDist(t))) 
-   meannndist[i] <- mean(temp_nnd)
-
-   meandisp[i] <- mean(apply(DispMatr,2,max))
-
-   meanconn[i] <- mean(apply(DispMatr,2,function(t) length(which(t>=0.005))))
-   closeAllConnections()
-}
-
-df$nn_dist <- meannndist
-df$mean_disp <- meandisp
-df$mean_conn <- meanconn
-
-write.csv(df,"AllVars2.csv",row.names=F)
 
 
 

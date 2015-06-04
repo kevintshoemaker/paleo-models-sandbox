@@ -46,7 +46,7 @@ if(is.na(file.info(RESULTS_DIRECTORY)[1,"isdir"])) dir.create(RESULTS_DIRECTORY)
 ####################
 
 NREPS <- 50     # number of samples to draw from the multivariate uniform prior (LHS) 
-TIMESTEPS <- 1000
+TIMESTEPS <- 2468 #1000
 NPOPS <- 7000
 GENTIME <- 25
 MP_TEMPLATE <- "Mammoth_7000_demo.mp"      # template MP file
