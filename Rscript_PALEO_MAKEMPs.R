@@ -37,6 +37,8 @@ if(is.na(file.info(FIGURES_DIRECTORY)[1,"isdir"])) dir.create(FIGURES_DIRECTORY)
 HS_DIRECTORY <- paste(BASE_DIRECTORY,"\\hs",sep="")                             # directory for storing habitat suitability files (used for creating KCH files )
 if(is.na(file.info(HS_DIRECTORY)[1,"isdir"])) dir.create(HS_DIRECTORY)
 
+RESULTS_DIRECTORY <- paste(BASE_DIRECTORY,"\\results",sep="")                             # directory for storing habitat suitability files (used for creating KCH files )
+if(is.na(file.info(RESULTS_DIRECTORY)[1,"isdir"])) dir.create(RESULTS_DIRECTORY)
 
 
 ####################
@@ -47,6 +49,12 @@ NREPS <- 50     # number of samples to draw from the multivariate uniform prior 
 TIMESTEPS <- 1000
 NPOPS <- 7000
 GENTIME <- 25
+MP_TEMPLATE <- "Mammoth_7000_demo.mp"      # template MP file
+VERBOSE=FALSE
+
+      # save global params
+setwd(MP_DIRECTORY)
+save(NREPS,TIMESTEPS,NPOPS,GENTIME,MP_TEMPLATE,file="GlobalParams.RData")
 
 
 ####################

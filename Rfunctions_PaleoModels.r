@@ -58,13 +58,15 @@ loadPackage <- function(pkg){
 ## GENERIC FUNCTION FOR PULLING SOURCE CODE FROM GITHUB OR OTHER URL
 ##########################################
 
-source_github <- function(baseurl,script) {
+source_github <- function(baseurl,scriptname) {
   # load package
    suppressMessages(suppressWarnings(require(RCurl)))
  
   # read script lines from website
-  url <- sprintf("%s%s",baseurl,script)
+  url <- sprintf("%s%s",baseurl,scriptname)
   script <- getURL(url, ssl.verifypeer = FALSE)
+  
+  script <- gsub("\r\n", "\n", script)     # get rid of carriage returns (not sure why this is necessary...)
  
   # parse lines and evaluate in the global environement
   eval(parse(text = script), envir= .GlobalEnv)
