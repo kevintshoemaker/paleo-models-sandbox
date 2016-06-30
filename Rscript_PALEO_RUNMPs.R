@@ -17,28 +17,43 @@
 
 rm(list=ls())
 
-######################
+
+#########################
 # SET PROJECT DIRECTORIES
-######################
-	  
-KEVIN = TRUE
+#########################
+
+KEVIN = FALSE  #TRUE
 DAMIEN = FALSE
+HRA_LAB = TRUE
 
-if(KEVIN) BASE_DIRECTORY <- "C:\\Users\\Kevin\\Dropbox\\Damien Fordham\\Mammoth Model"      
-	                                                                            # code directory should be your local copy of the GitHub repository
-if(KEVIN) CODE_DIRECTORY <- "C:\\Users\\Kevin\\GIT\\paleo-models-sandbox"           # directory for storing the r functions and scripts
+if(KEVIN) BASE_DIRECTORY <- "C:\\Users\\Kevin\\Dropbox\\Damien Fordham\\Mammoth Model"  
+if(DAMIEN) BASE_DIRECTORY <- "E:\\Mammoth"
 
+if(HRA_LAB) BASE_DIRECTORY <- "C:\\Users\\Akcakaya\\Desktop\\Mammoth Model"
+
+if(KEVIN) CODE_DIRECTORY <- "C:\\Users\\Kevin\\GIT\\paleo-models-sandbox"       # code directory should be your local copy of the GitHub repository   
+if(HRA_LAB) CODE_DIRECTORY <- "C:\\Users\\Akcakaya\\Desktop\\Mammoth Model\\paleo-models-sandbox"
+
+
+######## BELOW DOESNT NEED TO BE CHANGED
 DATA_DIRECTORY <- paste(BASE_DIRECTORY,"\\data",sep="")                         # directory for storing relevant data (CSV files)
 if(is.na(file.info(DATA_DIRECTORY)[1,"isdir"])) dir.create(DATA_DIRECTORY)
 
 MP_DIRECTORY <- paste(BASE_DIRECTORY,"\\mpfiles",sep="")                        # directory for storing and running MP files 
 if(is.na(file.info(MP_DIRECTORY)[1,"isdir"])) dir.create(MP_DIRECTORY)
 
+EXE_DIRECTORY <- paste(BASE_DIRECTORY,"\\EXEs",sep="")                        # directory for storing DLLs and EXE files 
+if(is.na(file.info(EXE_DIRECTORY)[1,"isdir"])) dir.create(EXE_DIRECTORY)
+
 FIGURES_DIRECTORY <- paste(BASE_DIRECTORY,"\\figures\\raw",sep="")              # directory for storing raw figures 
 if(is.na(file.info(FIGURES_DIRECTORY)[1,"isdir"])) dir.create(FIGURES_DIRECTORY)
 
 HS_DIRECTORY <- paste(BASE_DIRECTORY,"\\hs",sep="")                             # directory for storing habitat suitability files (used for creating KCH files )
 if(is.na(file.info(HS_DIRECTORY)[1,"isdir"])) dir.create(HS_DIRECTORY)
+
+# TODO: automate the KCH selection...
+KCH_DIRECTORY <- paste(BASE_DIRECTORY,"\\KCHFiles",sep="") #\\Sample_40\\file_1"                             # directory for storing habitat suitability files
+if(is.na(file.info(KCH_DIRECTORY)[1,"isdir"])) dir.create(KCH_DIRECTORY)
 
 RESULTS_DIRECTORY <- paste(BASE_DIRECTORY,"\\results",sep="")                             # directory for storing habitat suitability files (used for creating KCH files )
 if(is.na(file.info(RESULTS_DIRECTORY)[1,"isdir"])) dir.create(RESULTS_DIRECTORY)
@@ -67,7 +82,7 @@ source("Rfunctions_PaleoModels.r")
 setwd(DATA_DIRECTORY)
 GridCellAttributes <- read.csv("GridCellAttributes.csv",header=T)
 
-GridCellAttributes$RamasID <- as.numeric(gsub("[^0-9]", "", unlist(GridCellAttributes$ID)))
+ #GridCellAttributes$RamasID <- as.numeric(gsub("[^0-9]", "", unlist(GridCellAttributes$ID)))
 GridCellAttributes <- GridCellAttributes[order(GridCellAttributes$RamasID),]    # make sure it's ordered the same as the RAMAS model
 
 
@@ -94,7 +109,6 @@ source_github(baseurl,"fill.matrix.df.r")
 ###########################################
 #  READ MODEL SPECS/METADATA
 ###########################################
-
 
      ###   read in the LHS draws/MP file specs
 setwd(MP_DIRECTORY)
