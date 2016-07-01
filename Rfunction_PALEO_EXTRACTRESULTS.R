@@ -33,7 +33,7 @@ ExtractMPresults <- function(f=i,masterDF=masterDF,NicheBreadth=NicheBreadth){
   ############
   SimInfo <- masterDF[f,]
   SimInfo <- as.list(SimInfo)   # coerce to list 
-  MPFilename <- SimInfo$MPFilename
+  MPFilename <- as.character(SimInfo$MPFilename)
   name <- gsub(x=MPFilename,pattern=".mp",replacement="",fixed=T)
   
   
