@@ -73,7 +73,7 @@ MakeMPfile <- function(f=1,masterDF=masterDF,NicheBreadth=40){
                 # SET INIT HARVEST
       mpstarttime <- template$mp.file$MaxDur*GENTIME
       harvstarttime <- humanArrival.df$year_min[i] + masterDF$HUMAN[f]*(humanArrival.df$year_max[i]-humanArrival.df$year_min[i])
-      poplist2$UD3[i] <- round((mpstarttime - harvstarttime)/GENTIME) + 3  # KTS: added "+3" to make human effect have a time lag of 100 years 
+      poplist2$UD3[i] <- round((mpstarttime - harvstarttime)/GENTIME) + 4  # KTS: added "+4" to make human effect have a time lag of 100 years i.e., 5 generations
 
     }
     

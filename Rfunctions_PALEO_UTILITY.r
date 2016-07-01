@@ -6,9 +6,6 @@
 
 
 
-
-
-
 ###########
 ## FUNCTION "MakeLHSSamples"
 ##
@@ -86,6 +83,7 @@ MakeLHSSamples <- function(nicheBreadthDir,NicheBreadth){
 
   masterDF$NicheBreadth <- NicheBreadth
   setwd(MP_DIRECTORY)
+  ## name file for LHS parameters 
   write.csv(masterDF,"masterDF_prelim.csv",row.names=F)
   
   return(masterDF)
@@ -253,7 +251,6 @@ LoadData <- function(){
 SetUpWorkspace <- function(){
   if(KEVIN) BASE_DIRECTORY <<- "C:\\Users\\Kevin\\Dropbox\\Damien Fordham\\Mammoth Model"  
   if(DAMIEN) BASE_DIRECTORY <<- "E:\\Mammoth model"
-  
   if(HRA_LAB) BASE_DIRECTORY <<- "C:\\Users\\Akcakaya\\Desktop\\Mammoth Model"
   
   
@@ -273,8 +270,7 @@ SetUpWorkspace <- function(){
   HS_DIRECTORY <<- paste(BASE_DIRECTORY,"\\hs",sep="")                             # directory for storing habitat suitability files (used for creating KCH files )
   if(is.na(file.info(HS_DIRECTORY)[1,"isdir"])) dir.create(HS_DIRECTORY)
   
-  # TODO: automate the KCH selection...
-  KCH_DIRECTORY <<- paste(BASE_DIRECTORY,"\\KCHFiles",sep="") #\\Sample_40\\file_1"                             # directory for storing habitat suitability files
+  KCH_DIRECTORY <<- paste(BASE_DIRECTORY,"\\KCHFiles",sep="")                            # directory for storing habitat suitability files
   if(is.na(file.info(KCH_DIRECTORY)[1,"isdir"])) dir.create(KCH_DIRECTORY)
   
   RESULTS_DIRECTORY <<- paste(BASE_DIRECTORY,"\\results",sep="")                             # directory for storing habitat suitability files (used for creating KCH files )
@@ -283,8 +279,7 @@ SetUpWorkspace <- function(){
   ############
   ## GLOBAL PARAMETERS
 
-  TIMESTEPS <<- 3201 #2468 #1000
-  #NPOPS <- 7000
+  TIMESTEPS <<- 3201 # set according to length of the simulation 
   GENTIME <<- 25
   MP_TEMPLATE <<- "NewMammothTemplate.mp"      # template MP file
   DLL_FILENAME <<- "Mammoth.dll"
