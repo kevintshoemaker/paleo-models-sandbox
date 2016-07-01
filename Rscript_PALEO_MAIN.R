@@ -120,7 +120,7 @@ write.csv(masterDF,"masterDF.csv",row.names=F)
 setwd(MP_DIRECTORY)
 masterDF <- read.csv("masterDF.csv",header=T)
 nfiles <- nrow(masterDF)
-MPsToRun <- as.character(masterDF$MPFilename)    # list of all MP files to run
+ #MPsToRun <- as.character(masterDF$MPFilename)    # list of all MP files to run
 
 nb=40  # for testing...
 for(nb in NicheBreadths){     # Loop through niche breadths
@@ -133,7 +133,7 @@ for(nb in NicheBreadths){     # Loop through niche breadths
   ## objects to export to each node in the cluster
   
   functionlist <- c()   # 'mp.read', 'mp.write'
-  filelist <- c('masterDF','NicheBreadth','MPsToRun')  #'MP_DIRECTORY','template','GENTIME','humanArrival.df','EXE_DIRECTORY','DLL_FILENAME','dispersalFunc.df','DistClasses','NPOPS','DistBins',
+  filelist <- c('masterDF','NicheBreadth','MP_DIRECTORY') #,'template','GENTIME','humanArrival.df','EXE_DIRECTORY','DLL_FILENAME','dispersalFunc.df','DistClasses','NPOPS','DistBins',
   
   objectlist <- c(functionlist,filelist)   # full list of objects to export
   #packagelist <- c()
@@ -150,6 +150,42 @@ for(nb in NicheBreadths){     # Loop through niche breadths
 
 
 
+#############################
+#       STEP 3. EXTRACT RESULTS FROM THE MP FILES (in parallel)
+#############################
+
+#  READ MODEL SPECS/METADATA
+
+###   read in the LHS draws/MP file specs
+setwd(MP_DIRECTORY)
+masterDF <- read.csv("masterDF.csv",header=T)
+nfiles <- nrow(masterDF)
+
+nb=40  # for testing...
+for(nb in NicheBreadths){     # Loop through niche breadths
+  
+  NicheBreadth <- nb   # set the current niche breadth
+  
+  registerDoParallel(cores=num_cores)    # make the cluster
+  
+  #######################
+  ## objects to export to each node in the cluster
+  
+  functionlist <- c('mp.read','mp.read.results')   # , 'mp.write'
+  filelist <- c('masterDF','NicheBreadth','NPOPS','TIMESTEPS','MP_DIRECTORY','',)  #'MP_DIRECTORY','template','GENTIME','humanArrival.df','EXE_DIRECTORY','DLL_FILENAME','dispersalFunc.df','DistClasses','NPOPS','DistBins',
+  
+  objectlist <- c(functionlist,filelist)   # full list of objects to export
+  #packagelist <- c()
+  
+  all.mps <- foreach(i = 1:nrow(masterDF),
+                     .export=objectlist,
+                     #.packages = c("R2WinBUGS"),
+                     .errorhandling=c("pass")
+  ) %dopar% {   
+    ExtractMPresults(f=i,masterDF=masterDF,NicheBreadth=NicheBreadth)
+  }
+  
+}   # end loop through niche breadths
 
 
 
