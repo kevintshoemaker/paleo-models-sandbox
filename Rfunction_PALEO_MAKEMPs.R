@@ -26,7 +26,7 @@ MakeMPfile <- function(f=1,masterDF=masterDF,NicheBreadth=40){
     # f=2
     # for(f in 1:NREPS){
     # filename <- sprintf("NicheBreadth%s_LHS_Sample%s.mp",NicheBreadth,f)
-    filename <- masterDF$MPFilename
+    filename <- masterDF$MPFilename[f]
     
        ## set up the new folder to store the MP file and associated KCH files... (specifies the niche breadth)
     thisFolder <- sprintf("%s\\Sample_%s\\LHS_Sample%s",MP_DIRECTORY,NicheBreadth,f)

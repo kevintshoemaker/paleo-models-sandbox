@@ -1,15 +1,13 @@
 ##########################
-# This script writes all the MP files for the wooly mammoth model
+# This script runs a single MP file generated for the paleo project 
 #  Authors: Kevin Shoemaker and Damien Fordham
 #
-# Summary: ##### NOW: Run the mp files, record the predictor variables
-#     and response variables. 
- 
+# Summary: 
 #  3 June 2015 -- started scripting
 #  15 June 2015 -- tested script, loaded to GitHub
+#  1 July 2016  -- modified for parallelization
 
 #TODO  
-   #* deal with burnin period?
 
 ######################
 #   CLEAR THE WORKSPACE

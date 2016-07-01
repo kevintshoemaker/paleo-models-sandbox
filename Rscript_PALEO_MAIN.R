@@ -41,7 +41,7 @@ if(DAMIEN) CODE_DIRECTORY <<-  "C:\\Users\\Damien Fordham\\Documents\\GitHub\\pa
 setwd(CODE_DIRECTORY)
 source("Rfunctions_PALEO_UTILITY.r")     # Load all functions for Paleo project
 source("Rfunction_PALEO_MAKEMPs.r")
-#source("Rfunction_PALEO_RUNMPs.r")
+source("Rfunction_PALEO_RUNMPs.r")
 
 ####################
 #  PRELIMINARY: SET UP WORKSPACE AND LOAD PACKAGES
@@ -104,12 +104,60 @@ for(nb in NicheBreadths){     # Loop through niche breadths
   
 }   # end loop through niche breadths
 
-
+#  WRITE MODEL SPECS/METADATA
+setwd(MP_DIRECTORY)
+## name file for LHS parameters 
+write.csv(masterDF,"masterDF.csv",row.names=F)
 
 
 #############################
 #       STEP 2. RUN THE MP FILES (in parallel)
 #############################
+
+#  READ MODEL SPECS/METADATA
+
+###   read in the LHS draws/MP file specs
+setwd(MP_DIRECTORY)
+masterDF <- read.csv("masterDF.csv",header=T)
+nfiles <- nrow(masterDF)
+MPsToRun <- as.character(masterDF$MPFilename)    # list of all MP files to run
+
+nb=40  # for testing...
+for(nb in NicheBreadths){     # Loop through niche breadths
+  
+  NicheBreadth <- nb   # set the current niche breadth
+  
+  registerDoParallel(cores=num_cores)    # make the cluster
+  
+  #######################
+  ## objects to export to each node in the cluster
+  
+  functionlist <- c()   # 'mp.read', 'mp.write'
+  filelist <- c('masterDF','NicheBreadth','MPsToRun')  #'MP_DIRECTORY','template','GENTIME','humanArrival.df','EXE_DIRECTORY','DLL_FILENAME','dispersalFunc.df','DistClasses','NPOPS','DistBins',
+  
+  objectlist <- c(functionlist,filelist)   # full list of objects to export
+  #packagelist <- c()
+  
+  all.mps <- foreach(i = 1:nrow(masterDF),
+                     .export=objectlist,
+                     #.packages = c("R2WinBUGS"),
+                     .errorhandling=c("pass")
+  ) %dopar% {   
+    RunMPfile(f=i,masterDF=masterDF,NicheBreadth=NicheBreadth)
+  }
+  
+}   # end loop through niche breadths
+
+
+
+
+
+
+
+
+
+
+
 
 
 

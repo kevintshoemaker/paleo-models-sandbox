@@ -92,7 +92,7 @@ MakeLHSSamples <- function(nicheBreadthDir,NicheBreadth){
   
   setwd(MP_DIRECTORY)
   ## name file for LHS parameters 
-  write.csv(masterDF,"masterDF_prelim.csv",row.names=F)
+  write.csv(masterDF,sprintf("masterDF_prelim%s.csv",NicheBreadth),row.names=F)
   
   return(masterDF)
 }
@@ -174,6 +174,7 @@ LoadPackages <- function(){
   loadPackage("geosphere")
   loadPackage("parallel")
   loadPackage("doParallel")
+  loadPackage("adehabitatHR")
   
   # Read in the functions for reading and writing MP files, from Matt Lammens
   
@@ -182,6 +183,8 @@ LoadPackages <- function(){
   source_github(baseurl,"mp.read.r")
   source_github(baseurl,"metapopversion.r")
   source_github(baseurl,"fill.matrix.df.r")
+  source_github(baseurl,"mp.read.results.r")
+
 }
 
 
