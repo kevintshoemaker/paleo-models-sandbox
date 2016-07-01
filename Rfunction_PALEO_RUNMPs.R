@@ -25,7 +25,7 @@ RunMPfile <- function(f,masterDF=masterDF,NicheBreadth=NicheBreadth){
   	# RUN MODEL (takes some time!)
   	###########################
   
-  	command <- sprintf("START /WAIT \"MammothModelTest\" \"C:\\Program Files\\RAMAS GIS 6\\Metapop.exe\" \"%s\" /RUN=YES",MPsToRun[f])
+  	command <- sprintf("START /WAIT \"MammothModelTest\" \"C:\\Program Files\\RAMAS GIS 6\\Metapop.exe\" \"%s\" /RUN=YES",filename)
   	# cat(command)
   
   	setwd(thisFolder)
@@ -33,8 +33,6 @@ RunMPfile <- function(f,masterDF=masterDF,NicheBreadth=NicheBreadth){
   	system("Temp.bat")    # invoke the batch file to run the MP file...
   
   	#if(VERBOSE) cat(paste("just finished running file number",f,"\n",sep=" "))
-  
-  
 
 }
 
