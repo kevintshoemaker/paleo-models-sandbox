@@ -81,7 +81,15 @@ MakeLHSSamples <- function(nicheBreadthDir,NicheBreadth){
   
   #masterDF$HUNTDD <- HUNTDD_posvals[masterDF$HUNTDD]    # value input into RAMAS DLL for density dependent hunting 
 
-  masterDF$NicheBreadth <- NicheBreadth
+  masterDF$NicheBreadth <- NicheBreadth   # set the niche breadth
+  
+  #######  Add the MP filename to the masterDF data frame
+  
+  masterDF$MPFilename <- ""
+  for(i in 1:nrow(masterDF)){
+    masterDF$MPFilename[i] <- sprintf("NicheBreadth%s_LHS_Sample%s.mp",NicheBreadth,i)
+  }
+  
   setwd(MP_DIRECTORY)
   ## name file for LHS parameters 
   write.csv(masterDF,"masterDF_prelim.csv",row.names=F)

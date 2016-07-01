@@ -5,6 +5,7 @@
 #  22 May 2015 -- started scripting
 #  11 June 2015 -- added dispersal correction
 #  30 June 2016 -- cleaned up for initiation of model runs 
+##########################
 
 
 #######################
@@ -14,20 +15,27 @@
 rm(list=ls())
 
 #########################
-# SET PROJECT DIRECTORIES
+#   PRELIMINARY: SET PROJECT DIRECTORIES
 #########################
 
+<<<<<<< HEAD
 DAMIEN = TRUE
+=======
+KEVIN = TRUE # FALSE  # TRUE
+DAMIEN = FALSE
+>>>>>>> origin/master
 HRA_LAB = FALSE # TRUE
 
 ####################
-#  GLOBAL PARAMETERS  (USER SPECIFIED PARAMS)
+#   PRELIMINARY: SET GLOBAL PARAMETERS  (USER SPECIFIED PARAMS)
 ####################
 
 NREPS <- 5     # number of samples to draw from the multivariate uniform prior (LHS) per niche breadth value 
+##NicheBreadths = c(30,40,50,60,70,80,90,100)   
+NicheBreadths = c(40)                         # NOTE: changed to loop through single NB for testing
 
 ####################
-#  LOAD FUNCTIONS
+#   PRELIMINARY: LOAD FUNCTIONS
 #################### 
 
 if(KEVIN) CODE_DIRECTORY <<- "C:\\Users\\Kevin\\GIT\\paleo-models-sandbox"       # code directory should be your local copy of the GitHub repository   
@@ -37,16 +45,19 @@ if(DAMIEN) CODE_DIRECTORY <<-  "C:\\Users\\Damien Fordham\\Documents\\GitHub\\pa
 setwd(CODE_DIRECTORY)
 source("Rfunctions_PALEO_UTILITY.r")     # Load all functions for Paleo project
 source("Rfunction_PALEO_MAKEMPs.r")
+#source("Rfunction_PALEO_RUNMPs.r")
 
 ####################
-#  SET UP WORKSPACE AND LOAD PACKAGES
+#  PRELIMINARY: SET UP WORKSPACE AND LOAD PACKAGES
+####################
 
 SetUpWorkspace()   # function loads packages and sets up the workspace...  
-
+num_cores <- detectCores() - 1   # for setting up cluster... leave one core free for windows background processes?
 
 ####################
-#  DO DISPERSAL PRECALCULATIONS
-#    for each cell, determine which neighboring cells are in each distance bin... 
+#  PRELIMINARY: DO DISPERSAL PRECALCULATIONS
+#          for each cell, determine which neighboring cells are in each distance bin... 
+####################
 
 DistBins <- DispersalPreCalculations()
 
@@ -55,10 +66,11 @@ DistBins <- DispersalPreCalculations()
 
 template <- ReadMPTemplate()
 
-#######################
-#   START LOOPING THROUGH NICHE BREADTHS
-#######################
+#############################
+#       STEP 1. GENERATE THE MP FILES (parallel)
+#############################
 
+<<<<<<< HEAD
 ##NicheBreadths = c(30,40,50,60,70,80,90,100)
 NicheBreadths = c(40)
 
@@ -68,6 +80,10 @@ FirstNicheBreadth = NicheBreadths[1]
 nb=40
 
 for(nb in NicheBreadths){
+=======
+nb=40  # for testing...
+for(nb in NicheBreadths){     # Loop through niche breadths
+>>>>>>> origin/master
   
   NicheBreadth <- nb   # set the current niche breadth
   
@@ -76,20 +92,13 @@ for(nb in NicheBreadths){
   #        result is a data frame with each row representing the key parameters for an mp file
   
   dir <- sprintf("%s\\Sample_%s",KCH_DIRECTORY,nb)
-  if(nb==FirstNicheBreadth){
+  if(nb==NicheBreadths[1]){
     masterDF <- MakeLHSSamples(nicheBreadthDir=dir,NicheBreadth)    
   } else{
     masterDF <- rbind(masterDF,MakeLHSSamples(dir,nb))
   }
-    
-  #############################
-  #       GENERATE THE MP FILES (parallel)
-  #############################
-
   
-  num_cores <- detectCores() - 1   # leave one core free?
-  
-  registerDoParallel(cores=num_cores) 
+  registerDoParallel(cores=num_cores)    # make the cluster
   
   #######################
     ## objects to export to each node in the cluster
@@ -98,10 +107,8 @@ for(nb in NicheBreadths){
   filelist <- c('MP_DIRECTORY','template','GENTIME','humanArrival.df','EXE_DIRECTORY','DLL_FILENAME',
                  'dispersalFunc.df','DistClasses','NPOPS','DistBins','masterDF','NicheBreadth')
   
-  objectlist <- c(functionlist,filelist)
+  objectlist <- c(functionlist,filelist)   # full list of objects to export
   #packagelist <- c()
-  
-  NREPS=1  # temporary
   
   all.mps <- foreach(i = 1:nrow(masterDF),
                        .export=objectlist,
@@ -113,3 +120,19 @@ for(nb in NicheBreadths){
   
 }   # end loop through niche breadths
 
+<<<<<<< HEAD
+=======
+
+
+
+#############################
+#       STEP 2. RUN THE MP FILES (in parallel)
+#############################
+
+
+
+
+
+
+
+>>>>>>> origin/master
