@@ -50,16 +50,16 @@ ExtractMPresults <- function(f=i,masterDF=masterDF,NicheBreadth=NicheBreadth){
   SimInfo$ExtinctionYear <- 0
   
   ## add field (list) for storing MCP for each year
-  SimInfo$MCPs <- list() 
+  #SimInfo$MCPs <- list() 
   
   ## add field (vector) for storing total range area (MCP) over time
-  SimInfo$RangeArea <- numeric(TIMESTEPS)
+  #SimInfo$RangeArea <- numeric(TIMESTEPS)
   
   ## add field (scalar) for storing occupancy (number of occupied cells) over time
-  SimInfo$CellsOccupied <- numeric(TIMESTEPS)
+  #SimInfo$CellsOccupied <- numeric(TIMESTEPS)
   
   ## add field (scalar) for storing occupancy (number of occupied cells) over time
-  SimInfo$AreaOccupied <- numeric(TIMESTEPS)     
+  #SimInfo$AreaOccupied <- numeric(TIMESTEPS)     
   
   ###########################
   # GET RESULTS
@@ -104,11 +104,22 @@ ExtractMPresults <- function(f=i,masterDF=masterDF,NicheBreadth=NicheBreadth){
   SimInfo$TotAbund <- apply(SimInfo$PopAbund,2,sum)
   
   # RESULT: GLOBAL EXTINCTION YEAR
-  SimInfo$ExtinctionYear <- TIMESTEPS
+  SimInfo$ExtinctionYear <- NA
   if(SimInfo$TotAbund[TIMESTEPS]<1) SimInfo$ExtinctionYear <- min(which(SimInfo$TotAbund==0))
+  
+  # RESULT: FINAL OCCUPIED CELL(s)
+  SimInfo$FinalOccCell <- NA
+  if(SimInfo$TotAbund[TIMESTEPS]<1){ 
+    SimInfo$FinalOccCell <- which(SimInfo$PopAbund[,(SimInfo$ExtinctionYear-1)]>0)
+  }else{
+    SimInfo$FinalOccCell <- NA #which(SimInfo$PopAbund[,(TIMESTEPS-1)]>0)
+  }
+  
   
   # RESULT: FINAL OCCUPIED YEAR FOR EACH POPULATION
   SimInfo$FinalYear <- apply(SimInfo$PopAbund,1,function(t) ifelse(sum(t)>0,max(which(t>0)),NA))
+  
+  SimInfo$PopAbund <- NULL
   
   ####################
   # SAVE RESULTS TO HARD DISK AND REMOVE FROM RAM 
