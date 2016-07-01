@@ -17,7 +17,6 @@ rm(list=ls())
 # SET PROJECT DIRECTORIES
 #########################
 
-KEVIN = FALSE # FALSE  # TRUE
 DAMIEN = TRUE
 HRA_LAB = FALSE # TRUE
 
@@ -65,6 +64,7 @@ NicheBreadths = c(40)
 
 FirstNicheBreadth = NicheBreadths[1]
 
+## set first niche breadth to loop over
 nb=40
 
 for(nb in NicheBreadths){
@@ -112,5 +112,4 @@ for(nb in NicheBreadths){
   }
   
 }   # end loop through niche breadths
-
 
