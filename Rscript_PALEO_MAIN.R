@@ -18,12 +18,8 @@ rm(list=ls())
 #   PRELIMINARY: SET PROJECT DIRECTORIES
 #########################
 
-<<<<<<< HEAD
-DAMIEN = TRUE
-=======
 KEVIN = TRUE # FALSE  # TRUE
 DAMIEN = FALSE
->>>>>>> origin/master
 HRA_LAB = FALSE # TRUE
 
 ####################
@@ -70,21 +66,9 @@ template <- ReadMPTemplate()
 #       STEP 1. GENERATE THE MP FILES (parallel)
 #############################
 
-<<<<<<< HEAD
-##NicheBreadths = c(30,40,50,60,70,80,90,100)
-NicheBreadths = c(40)
-
-FirstNicheBreadth = NicheBreadths[1]
-
-## set first niche breadth to loop over
-nb=40
-
-for(nb in NicheBreadths){
-=======
 nb=40  # for testing...
 for(nb in NicheBreadths){     # Loop through niche breadths
->>>>>>> origin/master
-  
+
   NicheBreadth <- nb   # set the current niche breadth
   
   #####################
@@ -120,8 +104,6 @@ for(nb in NicheBreadths){     # Loop through niche breadths
   
 }   # end loop through niche breadths
 
-<<<<<<< HEAD
-=======
 
 
 
@@ -131,8 +113,3 @@ for(nb in NicheBreadths){     # Loop through niche breadths
 
 
 
-
-
-
-
->>>>>>> origin/master
