@@ -17,8 +17,8 @@ rm(list=ls())
 # SET PROJECT DIRECTORIES
 #########################
 
-KEVIN = TRUE # FALSE  # TRUE
-DAMIEN = FALSE
+KEVIN = FALSE # FALSE  # TRUE
+DAMIEN = TRUE
 HRA_LAB = FALSE # TRUE
 
 ####################
@@ -33,9 +33,11 @@ NREPS <- 5     # number of samples to draw from the multivariate uniform prior (
 
 if(KEVIN) CODE_DIRECTORY <<- "C:\\Users\\Kevin\\GIT\\paleo-models-sandbox"       # code directory should be your local copy of the GitHub repository   
 if(HRA_LAB) CODE_DIRECTORY <<- "C:\\Users\\Akcakaya\\Desktop\\Mammoth Model\\paleo-models-sandbox"
+if(DAMIEN) CODE_DIRECTORY <<-  "C:\\Users\\Damien Fordham\\Documents\\GitHub\\paleo-models-sandbox"
 
 setwd(CODE_DIRECTORY)
 source("Rfunctions_PALEO_UTILITY.r")     # Load all functions for Paleo project
+source("Rfunction_PALEO_MAKEMPs.r")
 
 ####################
 #  SET UP WORKSPACE AND LOAD PACKAGES
@@ -58,7 +60,8 @@ template <- ReadMPTemplate()
 #   START LOOPING THROUGH NICHE BREADTHS
 #######################
 
-NicheBreadths = c(30,40,50,60,70,80,90,100)
+##NicheBreadths = c(30,40,50,60,70,80,90,100)
+NicheBreadths = c(40)
 
 FirstNicheBreadth = NicheBreadths[1]
 
@@ -74,7 +77,7 @@ for(nb in NicheBreadths){
   
   dir <- sprintf("%s\\Sample_%s",KCH_DIRECTORY,nb)
   if(nb==FirstNicheBreadth){
-    masterDF <- MakeLHSSamples(dir,NicheBreadth)    
+    masterDF <- MakeLHSSamples(nicheBreadthDir=dir,NicheBreadth)    
   } else{
     masterDF <- rbind(masterDF,MakeLHSSamples(dir,nb))
   }

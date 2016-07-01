@@ -26,7 +26,7 @@ MakeLHSSamples <- function(nicheBreadthDir,NicheBreadth){
   LHSParms <- list()    # initialize the container for parameter bounds
   
   setwd(nicheBreadthDir)   
-  nCUTS <- length(list.files(path=nicheBreadthDir,pattern="Pop_1"))   #number of replicate KCH files  	
+  nCUTS <- length(grep("file_",list.dirs(path=nicheBreadthDir,recursive=F)))   #number of "cuts"  pattern="File_" 	
   LHSParms <- specifyLHSParam(paramslist=LHSParms,name="CUTS",type="CAT",lb=1,ub=nCUTS)
   
   ####  RMAX
@@ -252,7 +252,7 @@ LoadData <- function(){
 
 SetUpWorkspace <- function(){
   if(KEVIN) BASE_DIRECTORY <<- "C:\\Users\\Kevin\\Dropbox\\Damien Fordham\\Mammoth Model"  
-  if(DAMIEN) BASE_DIRECTORY <<- "E:\\Mammoth"
+  if(DAMIEN) BASE_DIRECTORY <<- "E:\\Mammoth model"
   
   if(HRA_LAB) BASE_DIRECTORY <<- "C:\\Users\\Akcakaya\\Desktop\\Mammoth Model"
   
