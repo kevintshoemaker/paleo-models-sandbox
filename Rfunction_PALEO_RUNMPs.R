@@ -15,7 +15,7 @@ RunMPfile <- function(f,masterDF=masterDF,NicheBreadth=NicheBreadth){
 
   #setwd(MP_DIRECTORY)
   #  for(f in 1:nfiles){     # loop through MP files...  [now paralellizable]
-    filename <- masterDF$MPFilename[f]
+    filename <- as.character(masterDF$MPFilename[f])
   
          ## set up the new folder to store the MP file and associated KCH files... (specifies the niche breadth)
     thisFolder <- sprintf("%s\\Sample_%s\\LHS_Sample%s",MP_DIRECTORY,NicheBreadth,f)
