@@ -36,7 +36,7 @@ MakeLHSSamples <- function(nicheBreadthDir,NicheBreadth){
   LHSParms <- specifyLHSParam(LHSParms,"ALLEE",type="CONT",lb=0,ub=500)       # KTS: changed to 500
   
   ### DENSITY PER 100kmX100km GRID CELL
-  LHSParms <- specifyLHSParam(LHSParms,"DENSITY",type="CONT",lb=250,ub=10000)     # was 1000 to 40000  
+  LHSParms <- specifyLHSParam(LHSParms,"DENSITY",type="CONT",lb=625,ub=10000)     # was 1000 to 40000  
   
   ### DISPERSAL #1: PROPORTION DISPERSING (used to compute "a" parameter.  a = p/2)
   LHSParms <- specifyLHSParam(LHSParms,"DISP1",type="CONT",lb=0.05,ub=0.25)
