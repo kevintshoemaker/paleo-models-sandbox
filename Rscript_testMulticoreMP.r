@@ -2,18 +2,13 @@
 
 foldernames <- c("C:\\MPTEST1","C:\\MPTEST2")
 
-filename <- "TEST.mp"
+filename <- "test.mp"
 
-RunMPFile <- function(i){
+RunMPfile <- function(i){
   ## set up the new folder to store the MP file and associated KCH files... (specifies the niche breadth)
   thisFolder <- foldernames[i]
   
-  
-  ###########################
-  # RUN MODEL (takes some time!)
-  ###########################
-  
-  command <- sprintf("START /WAIT \"MammothModelTest\" \"C:\\Program Files\\RAMAS GIS 6\\Metapop.exe\" \"%s\" /RUN=YES",MPsToRun[f])
+  command <- sprintf("START /WAIT \"MammothModelTest\" \"C:\\Program Files\\RAMAS GIS 6\\Metapop.exe\" \"%s\" /RUN=YES",filename)
   # cat(command)
   
   setwd(thisFolder)
@@ -21,14 +16,12 @@ RunMPFile <- function(i){
   system("Temp.bat")    # invoke the batch file to run the MP file...
 
 }
-#if(VERBOSE) cat(paste("just finished running file number",f,"\n",sep=" "))
-
 
 all.mps <- foreach(i = 1:nrow(masterDF),
                    .export=objectlist,
                    #.packages = c("R2WinBUGS"),
                    .errorhandling=c("pass")
 ) %dopar% {   
-  RunMPfile(f=i,masterDF=masterDF,NicheBreadth=NicheBreadth)
+  RunMPfile(i=i)
 }
 
