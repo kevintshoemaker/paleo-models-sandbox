@@ -33,7 +33,7 @@ MakeLHSSamples <- function(nicheBreadthDir,NicheBreadth){
   LHSParms <- specifyLHSParam(LHSParms,"SD",type="CONT",lb=0,ub=0.175)
   
   ### ALLEE EFFECT    0 to 100 individuals...  
-  LHSParms <- specifyLHSParam(LHSParms,"ALLEE",type="CONT",lb=0,ub=100)   
+  LHSParms <- specifyLHSParam(LHSParms,"ALLEE",type="CONT",lb=0,ub=500)       # KTS: changed to 500
   
   ### DENSITY PER 100kmX100km GRID CELL
   LHSParms <- specifyLHSParam(LHSParms,"DENSITY",type="CONT",lb=250,ub=10000)     # was 1000 to 40000  
@@ -45,12 +45,14 @@ MakeLHSSamples <- function(nicheBreadthDir,NicheBreadth){
   LHSParms <- specifyLHSParam(LHSParms,"DISP2",type="CONT",lb=100,ub=500) 
   
   ### HUNTING  (proportion harvested per year)   # NOTE: this is specified on an annual time scale (not generational). 
-  LHSParms <- specifyLHSParam(LHSParms,"HUNT",type="CONT",lb=0,ub=0.05)
+  LHSParms <- specifyLHSParam(LHSParms,"HARV",type="CONT",lb=0,ub=0.05)
   
   ### DENSITY DEPENDENCE ON HARVEST (y intercept of the harvest rate/abundance relationship)
   
-   # HUNTDD_posvals <- c(seq(-0.05,0,length=10),seq(0.1,1,length=10),seq(1.1,2,length=10))
-  LHSParms <- specifyLHSParam(LHSParms,"HUNTDD",type="CONT",lb=-0.05,ub=2)
+  #  # HUNTDD_posvals <- c(seq(-0.05,0,length=10),seq(0.1,1,length=10),seq(1.1,2,length=10))
+  # LHSParms <- specifyLHSParam(LHSParms,"HUNTDD",type="CONT",lb=-0.05,ub=2)
+  
+  LHSParms <- specifyLHSParam(LHSParms,"HARVZ",type="CONT",lb=1,ub=2)
   
   #### HUMAN ARRIVAL (0 represents lower bound on a per-population basis, 1 represents upper bound)
   LHSParms <- specifyLHSParam(LHSParms,"HUMAN",type="CONT",lb=0,ub=1)    # NOTE: was "CAT" not sure why
@@ -293,7 +295,7 @@ SetUpWorkspace <- function(){
   TIMESTEPS <<- 3201 # set according to length of the simulation 
   GENTIME <<- 25
   MP_TEMPLATE <<- "NewMammothTemplate.mp"      # template MP file
-  DLL_FILENAME <<- "Mammoth.dll"
+  DLL_FILENAME <<- "Mammoth2.dll"    # KTS: changed to "Mammoth2.dll" from "Mammoth.dll"
   VERBOSE=FALSE
   
   # save global params

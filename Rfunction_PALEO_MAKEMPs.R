@@ -44,9 +44,11 @@ MakeMPfile <- function(f=1,masterDF=masterDF,NicheBreadth=40){
   
     poplist2$KchangeSt <- as.character(poplist2$KchangeSt)   
   
-    poplist2$UD1 <- round(masterDF$HUNT[f],3)
-    poplist2$UD2 <- round(masterDF$HUNTDD[f],3)
-    poplist2$UD3 <- 0
+    poplist2$UD1 <- round(masterDF$HARV[f],3)    # KTS: changed to "HARV" from "HUNT"
+    poplist2$UD2 <- 0.4  # KTS: this is the "G" parameter in the harvest function that is set to 0.4
+    poplist2$UD3 <- round(masterDF$HARVZ[f],3)   # KTS: this is the "Z" parameter in the harvest function
+    poplist2$UD4 <- 0    # this is the "begin harvest year" parameter
+    poplist2$UD5 <- masterDF$DENSITY[f]   # KTS: did I do this right?
     
     i=1
     for(i in 1:NPOPS){
@@ -74,7 +76,7 @@ MakeMPfile <- function(f=1,masterDF=masterDF,NicheBreadth=40){
                 # SET INIT HARVEST
       mpstarttime <- template$mp.file$MaxDur*GENTIME
       harvstarttime <- humanArrival.df$year_min[i] + masterDF$HUMAN[f]*(humanArrival.df$year_max[i]-humanArrival.df$year_min[i])
-      poplist2$UD3[i] <- round((mpstarttime - harvstarttime)/GENTIME) + 4  # KTS: added "+4" to make human effect have a time lag of 100 years i.e., 5 generations
+      poplist2$UD4[i] <- round((mpstarttime - harvstarttime)/GENTIME) + 4  # KTS: added "+4" to make human effect have a time lag of 100 years i.e., 5 generations     # KTS: this is now "UD4"
 
     }
     
