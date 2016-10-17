@@ -265,6 +265,7 @@ SetUpWorkspace <- function(){
   if(KEVIN) BASE_DIRECTORY <<- "C:\\Users\\Kevin\\Dropbox\\Damien Fordham\\Mammoth Model"  
   if(DAMIEN) BASE_DIRECTORY <<- "E:\\Mammoth model"
   if(HRA_LAB) BASE_DIRECTORY <<- "C:\\Users\\Akcakaya\\Desktop\\Mammoth Model"
+  if(KEVIN_LAB) BASE_DIRECTORY <<- "E:\\Dropbox\\Damien Fordham\\Mammoth Model"
   
   
   ######## BELOW DOESNT NEED TO BE CHANGED

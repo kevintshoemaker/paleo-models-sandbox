@@ -18,9 +18,10 @@ rm(list=ls())
 #   PRELIMINARY: SET PROJECT DIRECTORIES
 #########################
 
-KEVIN = TRUE # FALSE  # TRUE
+KEVIN = FALSE # TRUE # FALSE  # TRUE
 DAMIEN = FALSE
 HRA_LAB = FALSE # TRUE
+KEVIN_LAB = TRUE
 
 ####################
 #   PRELIMINARY: SET GLOBAL PARAMETERS  (USER SPECIFIED PARAMS)
@@ -34,9 +35,10 @@ NicheBreadths = c(40)                         # NOTE: changed to loop through si
 #   PRELIMINARY: LOAD FUNCTIONS
 #################### 
 
-if(KEVIN) CODE_DIRECTORY <<- "C:\\Users\\Kevin\\GIT\\paleo-models-sandbox"       # code directory should be your local copy of the GitHub repository   
-if(HRA_LAB) CODE_DIRECTORY <<- "C:\\Users\\Akcakaya\\Desktop\\Mammoth Model\\paleo-models-sandbox"
-if(DAMIEN) CODE_DIRECTORY <<-  "C:\\Users\\Damien Fordham\\Documents\\GitHub\\paleo-models-sandbox"
+if(KEVIN) CODE_DIRECTORY <- "C:\\Users\\Kevin\\GIT\\paleo-models-sandbox"       # code directory should be your local copy of the GitHub repository   
+if(HRA_LAB) CODE_DIRECTORY <- "C:\\Users\\Akcakaya\\Desktop\\Mammoth Model\\paleo-models-sandbox"
+if(DAMIEN) CODE_DIRECTORY <-  "C:\\Users\\Damien Fordham\\Documents\\GitHub\\paleo-models-sandbox"
+if(KEVIN_LAB) CODE_DIRECTORY <- "E:\\GIT\\paleo-models-sandbox"
 
 setwd(CODE_DIRECTORY)
 source("Rfunctions_PALEO_UTILITY.r")     # Load all functions for Paleo project
@@ -67,7 +69,7 @@ template <- ReadMPTemplate()
 #       STEP 1. GENERATE THE MP FILES (parallel)
 #############################
 
-nb=40  # for testing...
+nb=70  # for testing...
 for(nb in NicheBreadths){     # Loop through niche breadths
 
   NicheBreadth <- nb   # set the current niche breadth
@@ -123,7 +125,7 @@ masterDF <- read.csv("masterDF.csv",header=T)
 nfiles <- nrow(masterDF)
  #MPsToRun <- as.character(masterDF$MPFilename)    # list of all MP files to run
 
-nb=40  # for testing...
+nb=70  # for testing...
 for(nb in NicheBreadths){     # Loop through niche breadths
   
   NicheBreadth <- nb   # set the current niche breadth
@@ -162,12 +164,13 @@ setwd(MP_DIRECTORY)
 masterDF <- read.csv("masterDF.csv",header=T)
 nfiles <- nrow(masterDF)
 
-nb=40  # for testing...
+nb=70  # for testing...
 for(nb in NicheBreadths){     # Loop through niche breadths
   
   NicheBreadth <- nb   # set the current niche breadth
   
-  registerDoParallel(cores=num_cores)    # make the cluster
+  cl <- makeCluster(num_cores,outfile="LOG.TXT")
+  registerDoParallel(cl=cl)    # make the cluster
   
   #######################
   ## objects to export to each node in the cluster

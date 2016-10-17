@@ -98,7 +98,7 @@ ExtractMPresults <- function(f=i,masterDF=masterDF,NicheBreadth=NicheBreadth){
     eval(parse(text=sprintf("SimInfo$PopAbund[%s,] <- Nvec",pop)))	   # RESULT: POP ABUNDANCE             
   }   # end loop through pops 
   
-  closeAllConnections()
+  #closeAllConnections()
   
   # RESULT: TOTAL ABUNDANCE
   SimInfo$TotAbund <- apply(SimInfo$PopAbund,2,sum)
@@ -132,6 +132,9 @@ ExtractMPresults <- function(f=i,masterDF=masterDF,NicheBreadth=NicheBreadth){
   
   #}  # end loop through files...
   
+  #closeAllConnections()
+  ### return something...
+  return(name)
   
 }  # end function 'ExtractMPresults'   
 
