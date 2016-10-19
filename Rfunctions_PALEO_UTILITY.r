@@ -233,7 +233,7 @@ LoadData <- function(){
   
   ##########
   # Compute area of each grid cell in km2
-  GridCellAttributes$Area2 <- 0
+  GridCellAttributes$Area2 <<- 0
   df <- data.frame(x=numeric(4),y=0)
   i=1
   for(i in 1:nrow(GridCellAttributes)){	
@@ -246,7 +246,7 @@ LoadData <- function(){
     df$x <- c(xvlb,xvub,xvub,xvlb)
     df$y <- c(yvub,yvub,yvlb,yvlb)
     #df <- SpatialPoints(df,proj4string=proj)
-    GridCellAttributes$Area2[i] <- areaPolygon(df)/1e6    # area of the MCP, in km2
+    GridCellAttributes$Area2[i] <<- areaPolygon(df)/1e6    # area of the MCP, in km2
   }
   
   # write to file, with updated areas...
