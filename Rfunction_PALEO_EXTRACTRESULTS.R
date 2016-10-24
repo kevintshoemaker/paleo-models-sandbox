@@ -23,7 +23,7 @@
 # MCP over time (maybe save for later)
 
 
-ExtractMPresults <- function(f=i,masterDF=masterDF,NicheBreadth=NicheBreadth){
+ExtractMPresults <- function(f=i,masterDF=masterDF,NicheBreadth=NicheBreadth,MCP=TRUE){
   
   ## set up the new folder to store the MP file and associated KCH files... (specifies the niche breadth)
   thisFolder <- sprintf("%s\\Sample_%s\\LHS_Sample%s",MP_DIRECTORY,NicheBreadth,f)
@@ -50,10 +50,10 @@ ExtractMPresults <- function(f=i,masterDF=masterDF,NicheBreadth=NicheBreadth){
   SimInfo$ExtinctionYear <- 0
   
   ## add field (list) for storing MCP for each year
-  SimInfo$MCPs <- list() 
+  if(MCP) SimInfo$MCPs <- list() 
   
   ## add field (vector) for storing total range area (MCP) over time
-  SimInfo$RangeArea <- numeric(TIMESTEPS)
+  if(MCP) SimInfo$RangeArea <- numeric(TIMESTEPS)
   
   ##add field (scalar) for storing occupancy (number of occupied cells) over time
   SimInfo$CellsOccupied <- numeric(TIMESTEPS)
@@ -120,26 +120,27 @@ ExtractMPresults <- function(f=i,masterDF=masterDF,NicheBreadth=NicheBreadth){
   
   # GET XY coords of all occupied sites
   occndx <- sapply(as.data.frame(SimInfo$PopAbund),function(t) which(t>1))  # indices of occupied populations for each year
-  proj <- CRS("+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs")
+  if(MCP) proj <- CRS("+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs")
   t=1
   for(t in 1:(SimInfo$ExtinctionYear-1)){
     ndx <- occndx[[t]]
     
     # RESULT: MCP OVER TIME
-    
-    if(length(ndx)>=5){       # At least 5 relocations are required to fit an home range   
-      df <- data.frame(x=numeric(length(ndx)),y=0)
-      df$x <- GridCellAttributes$x.cord[ndx]        # x and y coordinates for all occupied grid cells
-      df$y <- GridCellAttributes$y.cord[ndx]
-      df <- SpatialPoints(df,proj4string=proj)
-      MCP <- mcp(df)
-      MCPpoly <- MCP@polygons[[1]]@Polygons[[1]]@coords
-      MCParea <- areaPolygon(MCPpoly)/1e6    # area of the MCP, in km2
-      SimInfo$MCPs[[t]] <- MCP            # store the MCP as SpatialPolygonsDataFrame object
-      SimInfo$RangeArea[t] <- MCParea     # store MCP area for each year of the simulation
-    }else{
-      SimInfo$MCPs[[t]] <- NA
-      SimInfo$RangeArea[t] <- NA
+    if(MCP){
+      if(length(ndx)>=5){       # At least 5 relocations are required to fit an home range   
+        df <- data.frame(x=numeric(length(ndx)),y=0)
+        df$x <- GridCellAttributes$x.cord[ndx]        # x and y coordinates for all occupied grid cells
+        df$y <- GridCellAttributes$y.cord[ndx]
+        df <- SpatialPoints(df,proj4string=proj)
+        MCP <- mcp(df)
+        MCPpoly <- MCP@polygons[[1]]@Polygons[[1]]@coords
+        MCParea <- areaPolygon(MCPpoly)/1e6    # area of the MCP, in km2
+        SimInfo$MCPs[[t]] <- MCP            # store the MCP as SpatialPolygonsDataFrame object
+        SimInfo$RangeArea[t] <- MCParea     # store MCP area for each year of the simulation
+      }else{
+        SimInfo$MCPs[[t]] <- NA
+        SimInfo$RangeArea[t] <- NA
+      }
     }
     # RESULT: CELLS OCCUPIED OVER TIME
     SimInfo$CellsOccupied[t] <- length(ndx)

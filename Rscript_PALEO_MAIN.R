@@ -176,17 +176,18 @@ for(nb in NicheBreadths){     # Loop through niche breadths
   ## objects to export to each node in the cluster
   
   functionlist <- c('mp.read','mp.read.results')   # , 'mp.write'
-  filelist <- c('masterDF','NicheBreadth','NPOPS','TIMESTEPS','MP_DIRECTORY')  #'MP_DIRECTORY','template','GENTIME','humanArrival.df','EXE_DIRECTORY','DLL_FILENAME','dispersalFunc.df','DistClasses','NPOPS','DistBins',
+  filelist <- c('masterDF','NicheBreadth','NPOPS','TIMESTEPS','MP_DIRECTORY','GridCellAttributes')  #'MP_DIRECTORY','template','GENTIME','humanArrival.df','EXE_DIRECTORY','DLL_FILENAME','dispersalFunc.df','DistClasses','NPOPS','DistBins',
   
   objectlist <- c(functionlist,filelist)   # full list of objects to export
   #packagelist <- c()
+  
   
   all.mps <- foreach(i = 1:nrow(masterDF),
                      .export=objectlist,
                      #.packages = c("R2WinBUGS"),
                      .errorhandling=c("pass")
   ) %dopar% {   
-    ExtractMPresults(f=i,masterDF=masterDF,NicheBreadth=NicheBreadth)
+    ExtractMPresults(f=i,masterDF=masterDF,NicheBreadth=NicheBreadth,MCP=TRUE)
   }
   
 }   # end loop through niche breadths
