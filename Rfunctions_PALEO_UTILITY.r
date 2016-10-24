@@ -177,6 +177,7 @@ LoadPackages <- function(){
   loadPackage("parallel")
   loadPackage("doParallel")
   loadPackage("adehabitatHR")
+  loadPackage("sp")
   
   # Read in the functions for reading and writing MP files, from Matt Lammens
   
@@ -310,7 +311,7 @@ SetUpWorkspace <- function(){
 
 
 ###########
-## FUNCTION "LoadPackages"
+## FUNCTION "negexp"
 ##
 ## Basic dispersal function in Ramas...
 ###########

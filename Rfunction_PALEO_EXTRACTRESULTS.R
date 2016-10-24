@@ -23,7 +23,7 @@
 # MCP over time (maybe save for later)
 
 
-ExtractMPresults <- function(f=i,masterDF=masterDF,NicheBreadth=NicheBreadth,MCP=TRUE){
+ExtractMPresults <- function(f=i,masterDF=masterDF,NicheBreadth=NicheBreadth,doMCP=TRUE){
   
   ## set up the new folder to store the MP file and associated KCH files... (specifies the niche breadth)
   thisFolder <- sprintf("%s\\Sample_%s\\LHS_Sample%s",MP_DIRECTORY,NicheBreadth,f)
@@ -50,10 +50,10 @@ ExtractMPresults <- function(f=i,masterDF=masterDF,NicheBreadth=NicheBreadth,MCP
   SimInfo$ExtinctionYear <- 0
   
   ## add field (list) for storing MCP for each year
-  if(MCP) SimInfo$MCPs <- list() 
+  if(doMCP) SimInfo$MCPs <- list() 
   
   ## add field (vector) for storing total range area (MCP) over time
-  if(MCP) SimInfo$RangeArea <- numeric(TIMESTEPS)
+  if(doMCP) SimInfo$RangeArea <- numeric(TIMESTEPS)
   
   ##add field (scalar) for storing occupancy (number of occupied cells) over time
   SimInfo$CellsOccupied <- numeric(TIMESTEPS)
@@ -120,13 +120,13 @@ ExtractMPresults <- function(f=i,masterDF=masterDF,NicheBreadth=NicheBreadth,MCP
   
   # GET XY coords of all occupied sites
   occndx <- sapply(as.data.frame(SimInfo$PopAbund),function(t) which(t>1))  # indices of occupied populations for each year
-  if(MCP) proj <- CRS("+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs")
+  if(doMCP) proj <- CRS("+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs")
   t=1
   for(t in 1:(SimInfo$ExtinctionYear-1)){
     ndx <- occndx[[t]]
     
     # RESULT: MCP OVER TIME
-    if(MCP){
+    if(doMCP){
       if(length(ndx)>=5){       # At least 5 relocations are required to fit an home range   
         df <- data.frame(x=numeric(length(ndx)),y=0)
         df$x <- GridCellAttributes$x.cord[ndx]        # x and y coordinates for all occupied grid cells

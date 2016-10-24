@@ -184,10 +184,10 @@ for(nb in NicheBreadths){     # Loop through niche breadths
   
   all.mps <- foreach(i = 1:nrow(masterDF),
                      .export=objectlist,
-                     #.packages = c("R2WinBUGS"),
+                     .packages = c("sp","adehabitatHR","geosphere"),
                      .errorhandling=c("pass")
   ) %dopar% {   
-    ExtractMPresults(f=i,masterDF=masterDF,NicheBreadth=NicheBreadth,MCP=TRUE)
+    ExtractMPresults(f=i,masterDF=masterDF,NicheBreadth=NicheBreadth,doMCP=TRUE)
   }
   
 }   # end loop through niche breadths
