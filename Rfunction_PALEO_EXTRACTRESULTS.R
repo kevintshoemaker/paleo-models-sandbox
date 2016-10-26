@@ -64,109 +64,137 @@ ExtractMPresults <- function(f=i,masterDF=masterDF,NicheBreadth=NicheBreadth,doM
   ###########################
   # GET RESULTS
   ###########################
-  
-  ### step 1: set up the MP file connection 
-  setwd(thisFolder)
-  MPcon <- file(MPFilename, 'r')
-  
-  # while loop: find the string "Pop. 1" [indicates the beginning of the population results]
-  stringToFind <- "Pop. 1"
-  basendx <- 0
-  CHUNKSIZE <- 1000				      
-  while (length(input <- readLines(MPcon, n=CHUNKSIZE)) > 0){    # read in chunks until population results are found
+
+  result = tryCatch({   ## try to catch errors! 
+    ### step 1: set up the MP file connection 
+    setwd(thisFolder)
+    MPcon <- file(MPFilename, 'r')
     
-    temp <- grep(stringToFind,input)
-    if(length(temp)>0){ 
-      ndx <- basendx + temp
-      pushBack(input[(temp):CHUNKSIZE],MPcon)       # reset the file to where Pop. 1 began
-      break
-    } 
-    basendx <- basendx + CHUNKSIZE
-    
-  }   # end while loop
+    # while loop: find the string "Pop. 1" [indicates the beginning of the population results]
+    stringToFind <- "Pop. 1"
+    basendx <- 0
+    CHUNKSIZE <- 1000		
   
-  # read in the population abundances over time
-  for(pop in 1:NPOPS){
-    stringToFind <- sprintf("Pop. %s",pop)
-    temp <- readLines(MPcon,1)
-    if(temp!=stringToFind){
-      print(paste("ERROR!","Population #",pop))
-      break
-    }
-    input <- readLines(MPcon, n=TIMESTEPS)
-    Nvec <- sapply( strsplit(input, " "), function(t) as.numeric(t[1]))
-    eval(parse(text=sprintf("SimInfo$PopAbund[%s,] <- Nvec",pop)))	   # RESULT: POP ABUNDANCE             
-  }   # end loop through pops 
-  
-  #closeAllConnections()
-  
-  # RESULT: TOTAL ABUNDANCE
-  SimInfo$TotAbund <- apply(SimInfo$PopAbund,2,sum)
-  
-  # RESULT: GLOBAL EXTINCTION YEAR
-  SimInfo$ExtinctionYear <- NA
-  if(SimInfo$TotAbund[TIMESTEPS]<1) SimInfo$ExtinctionYear <- min(which(SimInfo$TotAbund==0))
-  
-  # RESULT: FINAL OCCUPIED CELL(s)
-  SimInfo$FinalOccCell <- NA
-  if(SimInfo$TotAbund[TIMESTEPS]<1){ 
-    SimInfo$FinalOccCell <- which(SimInfo$PopAbund[,(SimInfo$ExtinctionYear-1)]>0)
-  }else{
-    SimInfo$FinalOccCell <- NA #which(SimInfo$PopAbund[,(TIMESTEPS-1)]>0)
-  }
-  
-  # RESULT: FINAL OCCUPIED YEAR FOR EACH POPULATION
-  SimInfo$FinalYear <- apply(SimInfo$PopAbund,1,function(t) ifelse(sum(t)>0,max(which(t>0)),NA))
-  
-  # GET XY coords of all occupied sites
-  occndx <- sapply(as.data.frame(SimInfo$PopAbund),function(t) which(t>1))  # indices of occupied populations for each year
-  if(doMCP) proj <- CRS("+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs")
-  t=1
-  for(t in 1:(SimInfo$ExtinctionYear-1)){
-    ndx <- occndx[[t]]
-    
-    # RESULT: MCP OVER TIME
-    if(doMCP){
-      if(length(ndx)>=5){       # At least 5 relocations are required to fit an home range   
-        df <- data.frame(x=numeric(length(ndx)),y=0)
-        df$x <- GridCellAttributes$x.cord[ndx]        # x and y coordinates for all occupied grid cells
-        df$y <- GridCellAttributes$y.cord[ndx]
-        df <- SpatialPoints(df,proj4string=proj)
-        MCP <- mcp(df)
-        MCPpoly <- MCP@polygons[[1]]@Polygons[[1]]@coords
-        MCParea <- areaPolygon(MCPpoly)/1e6    # area of the MCP, in km2
-        SimInfo$MCPs[[t]] <- MCP            # store the MCP as SpatialPolygonsDataFrame object
-        SimInfo$RangeArea[t] <- MCParea     # store MCP area for each year of the simulation
-      }else{
-        SimInfo$MCPs[[t]] <- NA
-        SimInfo$RangeArea[t] <- NA
+      
+    while (length(input <- readLines(MPcon, n=CHUNKSIZE)) > 0){    # read in chunks until population results are found
+      
+      temp <- grep(stringToFind,input)
+      if(length(temp)>0){ 
+        ndx <- basendx + temp
+        pushBack(input[(temp):CHUNKSIZE],MPcon)       # reset the file to where Pop. 1 began
+        break
+      } 
+      basendx <- basendx + CHUNKSIZE
+      
+    }   # end while loop
+
+    # read in the population abundances over time
+    for(pop in 1:NPOPS){
+      stringToFind <- sprintf("Pop. %s",pop)
+      temp <- readLines(MPcon,1)
+      if(temp!=stringToFind){
+        print(paste("ERROR!","Population #",pop))
+        break
       }
+      input <- readLines(MPcon, n=TIMESTEPS)
+      Nvec <- sapply( strsplit(input, " "), function(t) as.numeric(t[1]))
+      eval(parse(text=sprintf("SimInfo$PopAbund[%s,] <- Nvec",pop)))	   # RESULT: POP ABUNDANCE             
+    }   # end loop through pops 
+    
+    if(isOpen(MPcon)){ 
+      close.connection(MPcon)
+      rm("MPcon")
     }
-    # RESULT: CELLS OCCUPIED OVER TIME
-    SimInfo$CellsOccupied[t] <- length(ndx)
     
-    # RESULT: OCCUPIED AREA OVER TIME AND CELLS OCCUPIED OVER TIME
-    areaVec <-  GridCellAttributes$Area[ndx]
-    SimInfo$AreaOccupied[t] <- sum(GridCellAttributes$Area2[ndx])
+    if(exists("MPcon")){
+      rm("MPcon")
+    }
     
-  }	
-  
-  SimInfo$PopAbund <- NULL   ## remove from memory
-  
-  ####################
-  # SAVE RESULTS TO HARD DISK AND REMOVE FROM RAM 
-  ####################
-  setwd(thisFolder)
-  filename <- sprintf("%s.RData",name)
-  eval(parse(text=sprintf("%s <- SimInfo",name)))
-  eval(parse(text=sprintf("save(%s,file=filename)",name)))   # save to disk
-  eval(parse(text=sprintf("rm(%s)",name)))   # remove from memory   
-  
-  #}  # end loop through files...
-  
+    # RESULT: TOTAL ABUNDANCE
+    SimInfo$TotAbund <- apply(SimInfo$PopAbund,2,sum)
+    
+    # RESULT: GLOBAL EXTINCTION YEAR
+    SimInfo$ExtinctionYear <- NA
+    if(SimInfo$TotAbund[TIMESTEPS]<1) SimInfo$ExtinctionYear <- min(which(SimInfo$TotAbund==0))
+    
+    # RESULT: FINAL OCCUPIED CELL(s)
+    SimInfo$FinalOccCell <- NA
+    if(SimInfo$TotAbund[TIMESTEPS]<1){ 
+      SimInfo$FinalOccCell <- which(SimInfo$PopAbund[,(SimInfo$ExtinctionYear-1)]>0)
+    }else{
+      SimInfo$FinalOccCell <- NA #which(SimInfo$PopAbund[,(TIMESTEPS-1)]>0)
+    }
+    
+    # RESULT: FINAL OCCUPIED YEAR FOR EACH POPULATION
+    SimInfo$FinalYear <- apply(SimInfo$PopAbund,1,function(t) ifelse(sum(t)>0,max(which(t>0)),NA))
+    
+    # GET XY coords of all occupied sites
+    occndx <- sapply(as.data.frame(SimInfo$PopAbund),function(t) which(t>1))  # indices of occupied populations for each year
+    if(doMCP) proj <- CRS("+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs")
+    t=1
+    n <- ifelse(is.na(SimInfo$ExtinctionYear),TIMESTEPS,SimInfo$ExtinctionYear)
+    for(t in 1:n){
+      ndx <- occndx[[t]]
+      
+      # RESULT: MCP OVER TIME
+      if(doMCP){
+        if(length(ndx)>=5){       # At least 5 relocations are required to fit an home range   
+          df <- data.frame(x=numeric(length(ndx)),y=0)
+          df$x <- GridCellAttributes$x.cord[ndx]        # x and y coordinates for all occupied grid cells
+          df$y <- GridCellAttributes$y.cord[ndx]
+          df <- SpatialPoints(df,proj4string=proj)
+          MCP <- mcp(df)
+          MCPpoly <- MCP@polygons[[1]]@Polygons[[1]]@coords
+          MCParea <- areaPolygon(MCPpoly)/1e6    # area of the MCP, in km2
+          SimInfo$MCPs[[t]] <- MCP            # store the MCP as SpatialPolygonsDataFrame object
+          SimInfo$RangeArea[t] <- MCParea     # store MCP area for each year of the simulation
+        }else{
+          SimInfo$MCPs[[t]] <- NA
+          SimInfo$RangeArea[t] <- NA
+        }
+      }
+      # RESULT: CELLS OCCUPIED OVER TIME
+      SimInfo$CellsOccupied[t] <- length(ndx)
+      
+      # RESULT: OCCUPIED AREA OVER TIME AND CELLS OCCUPIED OVER TIME
+      areaVec <-  GridCellAttributes$Area[ndx]
+      SimInfo$AreaOccupied[t] <- sum(GridCellAttributes$Area2[ndx])
+      
+    }	
+    
+    SimInfo$PopAbund <- NULL   ## remove from memory
+    
+    ####################
+    # SAVE RESULTS TO HARD DISK AND REMOVE FROM RAM 
+    ####################
+    setwd(thisFolder)
+    filename <- sprintf("%s.RData",name)
+    eval(parse(text=sprintf("%s <- SimInfo",name)))
+    eval(parse(text=sprintf("save(%s,file=filename)",name)))   # save to disk
+    eval(parse(text=sprintf("rm(%s)",name)))   # remove from memory   
+    
+    #}  # end loop through files...
+    name
+  }, warning = function(w){
+    as.character(w)
+  }, error = function(e){
+    setwd(thisFolder)
+    filename <- sprintf("%s.RData",name)
+    eval(parse(text=sprintf("%s <- e",name)))
+    eval(parse(text=sprintf("save(%s,file=filename)",name)))   # save to disk
+    eval(parse(text=sprintf("rm(%s)",name)))   # remove from memory
+    as.character(e)
+  }, finally = {
+    SimInfo$PopAbund <- NULL   ## remove from memory
+    if(exists("MPcon")){
+      close.connection(MPcon)
+      rm("MPcon")
+    }
+  })   # end tryCatch
+    
   #closeAllConnections()
   ### return something...
-  return(name)
+  return(result)
   
 }  # end function 'ExtractMPresults'   
 

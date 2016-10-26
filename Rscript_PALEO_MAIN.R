@@ -182,7 +182,7 @@ for(nb in NicheBreadths){     # Loop through niche breadths
   #packagelist <- c()
   
   
-  all.mps <- foreach(i = 1:nrow(masterDF),
+  all.mps <- foreach(i = c(1,2,3,4,6,7,8), #1:nrow(masterDF),
                      .export=objectlist,
                      .packages = c("sp","adehabitatHR","geosphere"),
                      .errorhandling=c("pass")
