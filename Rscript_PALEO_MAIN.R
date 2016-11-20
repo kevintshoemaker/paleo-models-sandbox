@@ -121,7 +121,7 @@ write.csv(masterDF,"masterDF.csv",row.names=F)
 
 ###   read in the LHS draws/MP file specs
 setwd(MP_DIRECTORY)
-masterDF <- read.csv("masterDF.csv",header=T)
+masterDF <- read.csv("masterDF.csv",header=T,stringsAsFactors = F)
 nfiles <- nrow(masterDF)
  #MPsToRun <- as.character(masterDF$MPFilename)    # list of all MP files to run
 
@@ -161,7 +161,7 @@ for(nb in NicheBreadths){     # Loop through niche breadths
 
 ###   read in the LHS draws/MP file specs
 setwd(MP_DIRECTORY)
-masterDF <- read.csv("masterDF.csv",header=T)
+masterDF <- read.csv("masterDF.csv",header=T,stringsAsFactors = F)
 nfiles <- nrow(masterDF)
 
 nb=70  # for testing...

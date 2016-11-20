@@ -26,7 +26,7 @@ MakeMPfile <- function(f=1,masterDF=masterDF,NicheBreadth=40){
     # f=2
     # for(f in 1:NREPS){
     # filename <- sprintf("NicheBreadth%s_LHS_Sample%s.mp",NicheBreadth,f)
-    filename <- masterDF$MPFilename[f]
+    filename <- as.character(masterDF$MPFilename[f])
     
        ## set up the new folder to store the MP file and associated KCH files... (specifies the niche breadth)
     thisFolder <- sprintf("%s\\Sample_%s\\LHS_Sample%s",MP_DIRECTORY,NicheBreadth,f)
@@ -36,7 +36,7 @@ MakeMPfile <- function(f=1,masterDF=masterDF,NicheBreadth=40){
     
        ### write out the KCH files for this model run (and get init abundances)   NOTE: KCH files are stored in the MP_DIRECTORY
        # initabunds <- writeKCH(HSnum = masterDF$HS[f], density = masterDF$DENSITY[f],areas=GridCellAttributes$Area2)     ### NOTE: takes a long time to run, but doesn't use up much memory
-    initabunds <- writeKCH(toFolder=thisFolder,NicheBreadth=40,Filenum=masterDF$CUTS[f],density=masterDF$DENSITY[f])
+    initabunds <- writeKCH(toFolder=thisFolder,NicheBreadth=NicheBreadth,Filenum=masterDF$CUTS[f],density=masterDF$DENSITY[f])
     
        #### extract the main population arrays (to be edited)
     poplist1 <- template$mp.file$PopList
