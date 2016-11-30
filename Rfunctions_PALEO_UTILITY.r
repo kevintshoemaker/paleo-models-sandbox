@@ -368,7 +368,7 @@ writeKCH <- function(toFolder=thisFolder,NicheBreadth=40,Filenum = 1,density = 1
 	  KCHfilename = sprintf("pop_%s.kch",i)
 	  setwd(directoryname)
 	  K = read.table(KCHfilename,header=F)[,1]
-	  K=K*density   # convert to abundance
+	  K=round(K*density)   # convert to abundance
 	  initabund[i] = K[1]
 	  setwd(toFolder)
 	  write.table(K,file=KCHfilename,row.names=F,col.names=F)

@@ -48,7 +48,7 @@ MakeMPfile <- function(f=1,masterDF=masterDF,NicheBreadth=40){
     poplist2$UD2 <- 0.4  # KTS: this is the "G" parameter in the harvest function that is set to 0.4
     poplist2$UD3 <- round(masterDF$HARVZ[f],3)   # KTS: this is the "Z" parameter in the harvest function
     poplist2$UD4 <- 0    # this is the "begin harvest year" parameter
-    poplist2$UD5 <- masterDF$DENSITY[f]   # KTS: did I do this right?
+    poplist2$UD5 <- round(masterDF$DENSITY[f])   # KTS: did I do this right?
     
     i=1
     for(i in 1:NPOPS){

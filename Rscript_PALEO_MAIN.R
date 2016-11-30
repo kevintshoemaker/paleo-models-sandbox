@@ -27,7 +27,7 @@ KEVIN_LAB = TRUE
 #   PRELIMINARY: SET GLOBAL PARAMETERS  (USER SPECIFIED PARAMS)
 ####################
 
-NREPS <- 5     # number of samples to draw from the multivariate uniform prior (LHS) per niche breadth value 
+NREPS <- 2     # number of samples to draw from the multivariate uniform prior (LHS) per niche breadth value 
 ##NicheBreadths = c(30,40,50,60,70,80,90,100)   
 NicheBreadths = c(70)                         # NOTE: changed to loop through single NB for testing
 
