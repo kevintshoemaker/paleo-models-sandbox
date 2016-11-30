@@ -29,7 +29,7 @@ KEVIN_LAB = TRUE
 
 NREPS <- 5     # number of samples to draw from the multivariate uniform prior (LHS) per niche breadth value 
 ##NicheBreadths = c(30,40,50,60,70,80,90,100)   
-NicheBreadths = c(40)                         # NOTE: changed to loop through single NB for testing
+NicheBreadths = c(70)                         # NOTE: changed to loop through single NB for testing
 
 ####################
 #   PRELIMINARY: LOAD FUNCTIONS
