@@ -146,7 +146,7 @@ for(nb in NicheBreadths){     # Loop through niche breadths
                      #.packages = c("R2WinBUGS"),
                      .errorhandling=c("pass")
   ) %dopar% {   
-    RunMPfile(f=i,masterDF=masterDF,NicheBreadth=NicheBreadth)
+    RunMPfile(f=i,masterDF=masterDF,NicheBreadth=NicheBreadth,suspendtime = i)
   }
   
 }   # end loop through niche breadths

@@ -11,7 +11,7 @@
 ##########################
 
 
-RunMPfile <- function(f,masterDF=masterDF,NicheBreadth=NicheBreadth){
+RunMPfile <- function(f,masterDF=masterDF,NicheBreadth=NicheBreadth,suspendtime){
 
   #setwd(MP_DIRECTORY)
   #  for(f in 1:nfiles){     # loop through MP files...  [now paralellizable]
@@ -30,6 +30,7 @@ RunMPfile <- function(f,masterDF=masterDF,NicheBreadth=NicheBreadth){
   
   	setwd(thisFolder)
   	write.table(command,file="Temp.bat",sep="",quote=FALSE,row.names=FALSE,col.names=FALSE)
+  	Sys.sleep(suspendtime)
   	system("Temp.bat")    # invoke the batch file to run the MP file...
   
   	#if(VERBOSE) cat(paste("just finished running file number",f,"\n",sep=" "))
