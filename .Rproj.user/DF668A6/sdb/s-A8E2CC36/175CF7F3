@@ -1,14 +1,14 @@
 {
     "collab_server" : "",
-    "contents" : "##########################\n# This script runs a single MP file generated for the paleo project \n#  Authors: Kevin Shoemaker and Damien Fordham\n#\n# Summary: \n#  3 June 2015 -- started scripting\n#  15 June 2015 -- tested script, loaded to GitHub\n#  1 July 2016  -- modified for parallelization\n\n#TODO  \n##########################\n\n\nRunMPfile <- function(f,masterDF=masterDF,NicheBreadth=NicheBreadth,suspendtime){\n\n  #setwd(MP_DIRECTORY)\n  #  for(f in 1:nfiles){     # loop through MP files...  [now paralellizable]\n    filename <- as.character(masterDF$MPFilename[f])\n  \n         ## set up the new folder to store the MP file and associated KCH files... (specifies the niche breadth)\n    thisFolder <- sprintf(\"%s\\\\Sample_%s\\\\LHS_Sample%s\",MP_DIRECTORY,NicheBreadth,f)\n  \n\n  \t###########################\n  \t# RUN MODEL (takes some time!)\n  \t###########################\n  \n  \tcommand <- sprintf(\"START /WAIT \\\"MammothModelTest\\\" \\\"C:\\\\Program Files\\\\RAMAS GIS 6\\\\Metapop.exe\\\" \\\"%s\\\" /RUN=YES\",filename)\n  \t# cat(command)\n  \n  \tsetwd(thisFolder)\n  \twrite.table(command,file=\"Temp.bat\",sep=\"\",quote=FALSE,row.names=FALSE,col.names=FALSE)\n  \tSys.sleep(suspendtime)\n  \tsystem(\"Temp.bat\")    # invoke the batch file to run the MP file...\n  \n  \t#if(VERBOSE) cat(paste(\"just finished running file number\",f,\"\\n\",sep=\" \"))\n\n}\n\n###############  END FUNCTION 'RunMPfile'\n############\n########\n####\n#\n\n\n\n\n\n\n",
+    "contents" : "##########################\n# This script runs a single MP file generated for the paleo project \n#  Authors: Kevin Shoemaker and Damien Fordham\n#\n# Summary: \n#  3 June 2015 -- started scripting\n#  15 June 2015 -- tested script, loaded to GitHub\n#  1 July 2016  -- modified for parallelization\n\n#TODO  \n##########################\n\n\nRunMPfile <- function(f=1,masterDF=masterDF,NicheBreadth=NicheBreadth,ramasloc=\"C:\\\\Program Files\\\\RAMAS GIS 6\\\\Metapop.exe\",suspendtime=1){  #\n\n  #setwd(MP_DIRECTORY)\n  #  for(f in 1:nfiles){     # loop through MP files...  [now paralellizable]\n    filename <- as.character(masterDF$MPFilename[f])\n  \n         ## set up the new folder to store the MP file and associated KCH files... (specifies the niche breadth)\n    thisFolder <- sprintf(\"%s\\\\Sample_%s\\\\LHS_Sample%s\",MP_DIRECTORY,NicheBreadth,f)\n  \n\n  \t###########################\n  \t# RUN MODEL (takes some time!)\n  \t###########################\n  \n  \tcommand <- sprintf(\"START /WAIT \\\"MammothModelTest\\\" \\\"%s\\\" \\\"%s\\\" /RUN=YES\",ramasloc,filename)\n  \t# cat(command)\n  \n  \tsetwd(thisFolder)\n  \twrite.table(command,file=\"Temp.bat\",sep=\"\",quote=FALSE,row.names=FALSE,col.names=FALSE)\n  \tSys.sleep(suspendtime)\n  \tsystem(\"Temp.bat\")    # invoke the batch file to run the MP file...\n  \n  \t#if(VERBOSE) cat(paste(\"just finished running file number\",f,\"\\n\",sep=\" \"))\n\n}\n\n###############  END FUNCTION 'RunMPfile'\n############\n########\n####\n#\n\n\n\n\n\n\n",
     "created" : 1476733161364.000,
     "dirty" : false,
     "encoding" : "UTF-8",
     "folds" : "",
-    "hash" : "2374126057",
+    "hash" : "376296490",
     "id" : "175CF7F3",
-    "lastKnownWriteTime" : 1495730310,
-    "last_content_update" : 1495730310846,
+    "lastKnownWriteTime" : 1495733975,
+    "last_content_update" : 1495733975935,
     "path" : "E:/GIT/paleo-models-sandbox/Rfunction_PALEO_RUNMPs.R",
     "project_path" : "Rfunction_PALEO_RUNMPs.R",
     "properties" : {

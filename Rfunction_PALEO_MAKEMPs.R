@@ -16,7 +16,7 @@
 #       GENERATE THE MP FILES: now parallelizable...
 #############################
 
-MakeMPfile <- function(f=1,masterDF=masterDF,NicheBreadth=40){
+MakeMPfile <- function(f=1,masterDF=masterDF,NicheBreadth=70,newkch=FALSE){
     
     ###########################################
              ## BUILD THE MP FILES
@@ -36,8 +36,11 @@ MakeMPfile <- function(f=1,masterDF=masterDF,NicheBreadth=40){
     
        ### write out the KCH files for this model run (and get init abundances)   NOTE: KCH files are stored in the MP_DIRECTORY
        # initabunds <- writeKCH(HSnum = masterDF$HS[f], density = masterDF$DENSITY[f],areas=GridCellAttributes$Area2)     ### NOTE: takes a long time to run, but doesn't use up much memory
-    initabunds <- writeKCH(toFolder=thisFolder,NicheBreadth=NicheBreadth,Filenum=masterDF$CUTS[f],density=masterDF$DENSITY[f])
-    
+    if(newkch) initabunds <- writeKCH(toFolder=thisFolder,NicheBreadth=NicheBreadth,Filenum=masterDF$CUTS[f],density=masterDF$DENSITY[f])
+
+    # if kch files already exist, extract initial abundances
+    if(!newkch) initabunds <- extractInitAbunds(thisFolder)
+        
        #### extract the main population arrays (to be edited)
     poplist1 <- template$mp.file$PopList
     poplist2 <- template$mp.file$PopData_df 

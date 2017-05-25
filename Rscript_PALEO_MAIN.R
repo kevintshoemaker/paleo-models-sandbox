@@ -102,7 +102,7 @@ for(nb in NicheBreadths){     # Loop through niche breadths
                        #.packages = c("R2WinBUGS"),
                        .errorhandling=c("pass")
   ) %dopar% {   
-    MakeMPfile(f=i,masterDF=masterDF,NicheBreadth=NicheBreadth)
+    MakeMPfile(f=i,masterDF=masterDF,NicheBreadth=NicheBreadth,newkch=FALSE)  # KTS: added "newkch" argument to function, which uses existing KCH files instead of making new ones...
   }
   
 }   # end loop through niche breadths
@@ -146,7 +146,7 @@ for(nb in NicheBreadths){     # Loop through niche breadths
                      #.packages = c("R2WinBUGS"),
                      .errorhandling=c("pass")
   ) %dopar% {   
-    RunMPfile(f=i,masterDF=masterDF,NicheBreadth=NicheBreadth,suspendtime = i)
+    RunMPfile(f=i,masterDF=masterDF,NicheBreadth=NicheBreadth,ramasloc=METAPOP_LOCATION,suspendtime=i)
   }
   
 }   # end loop through niche breadths

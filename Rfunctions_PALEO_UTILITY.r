@@ -45,7 +45,7 @@ MakeLHSSamples <- function(nicheBreadthDir,NicheBreadth){
   LHSParms <- specifyLHSParam(LHSParms,"DISP2",type="CONT",lb=100,ub=500) 
   
   ### HUNTING  (proportion harvested per year)   # NOTE: this is specified on an annual time scale (not generational). 
-  LHSParms <- specifyLHSParam(LHSParms,"HARV",type="CONT",lb=0,ub=0.05)
+  LHSParms <- specifyLHSParam(LHSParms,"HARV",type="CONT",lb=0.05,ub=0.3)
   
   ### DENSITY DEPENDENCE ON HARVEST (y intercept of the harvest rate/abundance relationship)
   
@@ -268,6 +268,10 @@ SetUpWorkspace <- function(){
   if(HRA_LAB) BASE_DIRECTORY <<- "C:\\Users\\Akcakaya\\Desktop\\Mammoth Model"
   if(KEVIN_LAB) BASE_DIRECTORY <<- "E:\\Dropbox\\Damien Fordham\\Mammoth Model"
   
+  if(KEVIN_LAB) METAPOP_LOCATION <<- "E:\\GIT\\R_Metapop_Interface\\Executables\\Metapop.exe"
+  if(KEVIN) METAPOP_LOCATION <<- "C:\\Program Files\\RAMAS GIS 6\\Metapop.exe"
+  if(DAMIEN) METAPOP_LOCATION <<- "C:\\Program Files\\METAPOP 6\\Metapop.exe"
+  
   
   ######## BELOW DOESNT NEED TO BE CHANGED
   DATA_DIRECTORY <<- paste(BASE_DIRECTORY,"\\data",sep="")                         # directory for storing relevant data (CSV files)
@@ -302,7 +306,7 @@ SetUpWorkspace <- function(){
   
   # save global params
   setwd(DATA_DIRECTORY)
-  save(NREPS,TIMESTEPS,GENTIME,MP_TEMPLATE,file="GlobalParams.RData")
+  save(NREPS,TIMESTEPS,GENTIME,MP_TEMPLATE,METAPOP_LOCATION,file="GlobalParams.RData")
   
   LoadPackages()  # load all packages
   LoadData()      # load all data
@@ -375,6 +379,29 @@ writeKCH <- function(toFolder=thisFolder,NicheBreadth=40,Filenum = 1,density = 1
 	}
 	return(initabund)
 }
+
+
+###########
+## FUNCTION "extractInitAbunds"
+##
+## computes initial abundance on the basis of existing KCH files
+###########
+
+getfirst <- function(kchfile){
+  #browser()
+  con <- file(kchfile, open = "r")
+  on.exit({close(con);closeAllConnections()}, add=TRUE)
+  return(as.numeric(readLines(con,1)))
+}
+
+extractInitAbunds <- function(thisFolder){
+  setwd(thisFolder)
+  allkch <- list.files()[grep(".kch",list.files())]
+  popnum <- as.numeric(unlist(regmatches(allkch, gregexpr("[[:digit:]]+", allkch))))
+  ndx <- order(popnum)
+  initabund <- as.numeric(trunc(sapply(allkch[ndx],getfirst)))
+}
+
 
 ###########
 ## FUNCTION "loadPackage"

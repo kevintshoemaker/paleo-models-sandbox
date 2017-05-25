@@ -11,7 +11,7 @@
 ##########################
 
 
-RunMPfile <- function(f,masterDF=masterDF,NicheBreadth=NicheBreadth,suspendtime){
+RunMPfile <- function(f=1,masterDF=masterDF,NicheBreadth=NicheBreadth,ramasloc="C:\\Program Files\\RAMAS GIS 6\\Metapop.exe",suspendtime=1){  #
 
   #setwd(MP_DIRECTORY)
   #  for(f in 1:nfiles){     # loop through MP files...  [now paralellizable]
@@ -25,7 +25,7 @@ RunMPfile <- function(f,masterDF=masterDF,NicheBreadth=NicheBreadth,suspendtime)
   	# RUN MODEL (takes some time!)
   	###########################
   
-  	command <- sprintf("START /WAIT \"MammothModelTest\" \"C:\\Program Files\\RAMAS GIS 6\\Metapop.exe\" \"%s\" /RUN=YES",filename)
+  	command <- sprintf("START /WAIT \"MammothModelTest\" \"%s\" \"%s\" /RUN=YES",ramasloc,filename)
   	# cat(command)
   
   	setwd(thisFolder)
