@@ -384,23 +384,23 @@ writeKCH <- function(toFolder=thisFolder,NicheBreadth=40,Filenum = 1,density = 1
 ###########
 ## FUNCTION "extractInitAbunds"
 ##
-## computes initial abundance on the basis of existing KCH files
+## computes initial abundance on the basis of existing KCH files (NOTE: this was never fully developed and will not work properly without serious changes)
 ###########
 
-getfirst <- function(kchfile){
-  #browser()
-  con <- file(kchfile, open = "r")
-  on.exit({close(con);closeAllConnections()}, add=TRUE)
-  return(as.numeric(readLines(con,1)))
-}
-
-extractInitAbunds <- function(thisFolder){
-  setwd(thisFolder)
-  allkch <- list.files()[grep(".kch",list.files())]
-  popnum <- as.numeric(unlist(regmatches(allkch, gregexpr("[[:digit:]]+", allkch))))
-  ndx <- order(popnum)
-  initabund <- as.numeric(trunc(sapply(allkch[ndx],getfirst)))
-}
+# getfirst <- function(kchfile){
+#   #browser()
+#   con <- file(kchfile, open = "r")
+#   on.exit({close(con);closeAllConnections()}, add=TRUE)
+#   return(as.numeric(readLines(con,1)))
+# }
+# 
+# extractInitAbunds <- function(thisFolder){
+#   setwd(thisFolder)
+#   allkch <- list.files()[grep(".kch",list.files())]
+#   popnum <- as.numeric(unlist(regmatches(allkch, gregexpr("[[:digit:]]+", allkch))))
+#   ndx <- order(popnum)
+#   initabund <- as.numeric(trunc(sapply(allkch[ndx],getfirst)))
+# }
 
 
 ###########

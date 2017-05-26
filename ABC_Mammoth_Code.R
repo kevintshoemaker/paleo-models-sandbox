@@ -1,7 +1,7 @@
 ##########################
 # This master script performs Approximate Bayesian Analysis
 #     algorithms and goodness-of-fit testing for the Paleo simulations
-#         USES THE ABC PACKAGE (for post-hoc elimination-style ABC)
+#         USES THE 'ABC' PACKAGE (for post-hoc elimination-style ABC)
 #
 #  Authors: Kevin Shoemaker and Damien Fordham
 # 
@@ -18,72 +18,296 @@ rm(list=ls())
 ##ABC code
 library(abc)
 library(raster)
-library(ggmap)
+#library(ggmap)
 library(mapproj)
 library(rworldmap)
 library(abctools)    # for fancy calibration of the posterior - for later? 
 
+
 ####################
-# LOAD SIMULATION RESULTS
+# LOAD FUNCTIONS
+####################
+
+# prepare data for ABC
+
+prepareForABC <- function(data=all,subset=c(1,3),standardized=T){
+  par.sim <<- data[,estimable.params]     # samples run from parameter space 
+  if(standardized){ 
+    maxstats <- apply(data[,test.statistics[subset],drop=FALSE],2,function(t) max(t,na.rm=T))
+    for(i in test.statistics[subset]){
+      data[,i] <- data[,i]/maxstats[i]
+    }
+    stat.obs <<- test.statistics.obs[test.statistics[subset]]/maxstats
+  } else{
+    stat.obs <<- test.statistics.obs[test.statistics[subset]]
+  }
+  stat.sim <<- data[,test.statistics[subset],drop=FALSE]
+}
+
+
+## plot priors for all parameters (to check for uniformity) 
+
+visualize.priors <- function(){
+  par(mfrow=c(2, 3),ask=TRUE)
+  
+  for(i in 1:length(estimable.params)){
+    hist(all[,estimable.params[i]], breaks = 50,main=estimable.params[i])
+  }
+}
+
+
+## note: this function only works with rejection method...
+visualize.posteriors <- function(){
+  par(mfrow=c(2, 3),ask=TRUE)
+  posterior_ndx <- as.numeric(rownames(as.matrix(rej$ss))) 
+  all_post <- all[posterior_ndx,]
+  for(i in 1:length(estimable.params)){
+    hist(all_post[,estimable.params[i]], breaks = 50,main=estimable.params[i],freq=FALSE)
+    lines(density(all_post[,estimable.params[i]]),col="blue",lwd=2)
+  }
+}
+
+
+
+visualize <- function(target=target){
+  
+  par(ask=TRUE)
+  
+  #if(toPlot=="ABUNDANCE"){
+    matches <- as.numeric(unlist(regmatches(target, gregexpr("[[:digit:]]+", target))))
+    nichebreadth <- matches[1]
+    sample <- matches[2]
+    
+    
+    filename <- sprintf("NicheBreadth%i_TotAbund_output_alldata.csv",nichebreadth)
+    
+    setwd(SIM_RESULTS_DIR)
+    
+    #getwd()
+    #list.files()
+    
+    
+    abund <- read.csv(filename, header = T,stringsAsFactors = FALSE)    # if(!"abund"%in%ls(name=.GlobalEnv))  
+  
+    rownames(abund) <- abund[,1]
+  
+    #head(abund[,2000:2010])
+    
+    time<- rev(seq(from =0, to =80000, by = 25))
+    
+    timeall <- time[2361:2928]
+    timebreak1 <- time[2708:2928]
+    timebreak2 <- time[2361:2707]
+    
+    ## Provide row id of simulation of interest
+    abundall <- as.numeric(abund[target,2362:2929])     
+    abundbreak1 <- as.numeric(abund[target,2709:2929])
+    abundbreak2 <- as.numeric(abund[target,2362:2708])
+    
+    #graphics.off()
+    plot(timeall, abundall, pch = 16, cex = 0.2, col = "blue", main = "Change in Ne", 
+         ylim=c(0,min(2000000,max(abundall+10000))),xlab = "Time (year)", ylab = "Abundance")   #  ,
+    
+    break1coef <- round(lm(abundbreak1~timebreak1)$coefficients[2],2) 
+    break2coef <- round(lm(abundbreak2~timebreak2)$coefficients[2],2)
+    
+    abline(lm(abundbreak1~timebreak1))
+    abline(lm(abundbreak2~timebreak2))
+    
+    
+    ## Extinction presumed to have occurred by 3000 years ago; and only interested in records after 21,000 years ago
+    time2 <- (eff_popsize[61:420,1])
+    abund2 <-(eff_popsize[61:420,2])
+    data2 <- cbind(time2, abund2)
+    
+    points(time2, abund2, cex = 0.1, col = "red",pch=20)
+  #}
+  
+  
+  #if(toPlot=="EXTINCTION_DATE"){
+    matches <- as.numeric(unlist(regmatches(target, gregexpr("[[:digit:]]+", target))))
+    nichebreadth <- matches[1]
+    sample <- matches[2]
+    
+    colors <- c("red","orange","yellow","green","blue","purple","violet","black")
+    cutoffs <- c(100000,70000,40000,20000,15000,10000,5000,4000,0)
+    
+    #colname <- sprintf("NicheBreadth%i_LHS_Sample%i.mp",nichebreadth,sample)
+    
+    filename <- sprintf("NicheBreadth%i_FinalYear_output_alldata_formatted.csv",nichebreadth)
+    
+    setwd(SIM_RESULTS_DIR)
+    
+    extinct <- read.csv(filename, header = T,stringsAsFactors = FALSE)    # if(!"abund"%in%ls(name=.GlobalEnv))  
+    
+    #rownames(extinct) <-  
+    
+    xcords <- extinct[,1]
+    ycords <- extinct[,2]
+    head(extinct[,1:10])
+    
+    if(any(xcords<0)) xcords[which(xcords<0)] <- 180+(180 - abs(xcords[which(xcords<0)]))
+    
+    thissample <- extinct[,target]
+    
+    time<- rev(seq(from =0, to =80000, by = 25))
+    
+    ext.time <- time[thissample]
+    
+    ext.time.cols <- 9-as.numeric(cut(ext.time,cutoffs))
+    
+    #exttime_scaled <- ext.time/80000
+    
+    cols <- colors[ext.time.cols] #colorRamp(c("blue","red"), bias = 1, space = c("rgb"),
+             #         interpolate = c("linear"), alpha = FALSE)(exttime_scaled)
+    
+    #graphics.off()
+    #map <- get_map(location = 'Asia', zoom = 3)
+    newmap <- getMap(resolution = "low")
+    #ggmap(map)
+    
+    
+    
+    par(mfrow=c(2,1))
+    plot(newmap,xlim = c(20, 200),
+         ylim = c(30, 80),
+         asp = 1,
+         main="simulated"
+    )
+    points(xcords,ycords,pch=20,cex=0.01,col=cols)
+    
+    ### location of final extinction
+    ndx <- which(ext.time==min(ext.time,na.rm=T))
+    xcords_lastext <- extinct[ndx,1]
+    
+    if(any(xcords_lastext<0)) xcords_lastext[which(xcords_lastext<0)] <- 180+(180 - abs(xcords_lastext[which(xcords_lastext<0)]))
+    
+    ycoord_lastext <- extinct[ndx,2]
+    
+    # plot(newmap,xlim = c(50, 219),
+    #      ylim = c(30, 71),
+    #      asp = 1,
+    #      main="real"
+    # )
+    points(xcords_lastext,ycoord_lastext,pch="X",cex=2,col="black")
+    
+    
+    plot(newmap,xlim = c(20, 200),
+         ylim = c(30, 80),
+         asp = 1,
+         main="real"
+    )
+    
+    ext.time.cols <- 9-as.numeric(cut(extinct_date$Ext,cutoffs))
+    
+    #exttime_scaled <- ext.time/80000
+    
+    cols <- colors[ext.time.cols]
+    #cols <- colorRamp(c("blue","red"), bias = 1, space = c("rgb"),
+     #                 interpolate = c("linear"), alpha = FALSE)(extinct_date$Ext/80000)
+
+    points(extinct_date$Mammoth_estimates.CI.Barnoski._Long,extinct_date$Mammoth_estimates.CI.Barnoski._Lat,pch=20,cex=0.01,col=cols)    
+    
+
+    points(last.locations[5,],pch="X",cex=2,col="yellow")
+    
+    
+    
+    
+  #}
+  #graphics.off()
+  
+}
+
+
+####################
+# LOAD SIMULATIONs
+#
+# specify directory that contains all simulation results and parameter values, prepared for ABC
 ###################
 
+KEVIN_LAB <- TRUE
+DAMIEN <- FALSE 
 
-wd <- "E:\\Dropbox\\Damien Fordham\\Mammoth Model\\Kevin\\MergedInputs\\"
+if(KEVIN_LAB) BASE_RESULTS_DIR <- "E:\\MammothResults"
 
-wd_results <- "E:\\MammothResults\\ABCAnalysisInputs\\"
+SIM_RESULTS_DIR <- sprintf("%s\\ABCAnalysisInputs\\",BASE_RESULTS_DIR)
+TARGETS_DIR <- sprintf("%s\\ABCAnalysisTargets",BASE_RESULTS_DIR)
+GENETIC_TARGETS_DIR <- sprintf("%s\\Genetic",TARGETS_DIR)
+FOSSIL_TARGETS_DIR <- sprintf("%s\\Fossil",TARGETS_DIR)   
+INPUTS_DIR <- sprintf("%s\\ABCAnalysis\\MergedInputs",BASE_RESULTS_DIR)
 
-setwd(wd)
-dat1 <- read.csv(sprintf("%sNicheBreadth40_ABC_data_revised.csv",wd), header = T,stringsAsFactors = FALSE)
-dat2 <- read.csv(sprintf("%sNicheBreadth50_ABC_data_revised.csv",wd), header = T,stringsAsFactors = FALSE)
-dat3 <- read.csv(sprintf("%sNicheBreadth60_ABC_data_revised.csv",wd), header = T,stringsAsFactors = FALSE)
-dat4 <- read.csv(sprintf("%sNicheBreadth70_ABC_data_revised.csv",wd), header = T,stringsAsFactors = FALSE)
-dat5 <- read.csv(sprintf("%sNicheBreadth80_ABC_data_revised.csv",wd), header = T,stringsAsFactors = FALSE)
-dat6 <- read.csv(sprintf("%sNicheBreadth90_ABC_data_revised.csv",wd), header = T,stringsAsFactors = FALSE)
+setwd(INPUTS_DIR)
+
+
+dat1 <- read.csv("NicheBreadth40_ABC_data_revised.csv", header = T,stringsAsFactors = FALSE)
+dat2 <- read.csv("NicheBreadth50_ABC_data_revised.csv", header = T,stringsAsFactors = FALSE)
+dat3 <- read.csv("NicheBreadth60_ABC_data_revised.csv", header = T,stringsAsFactors = FALSE)
+dat4 <- read.csv("NicheBreadth70_ABC_data_revised.csv", header = T,stringsAsFactors = FALSE)
+dat5 <- read.csv("NicheBreadth80_ABC_data_revised.csv", header = T,stringsAsFactors = FALSE)
+dat6 <- read.csv("NicheBreadth90_ABC_data_revised.csv", header = T,stringsAsFactors = FALSE)
 
 all <- rbind(dat1,dat2,dat3,dat4,dat5,dat6)
-nrow(all)
 
-head(all)
+nrow(all)   # 74931 simulations
+
+head(all)   # check the combined dataframe 
+
+## Generate a version with no NA values (some analyses do not allow NA values)
+
+all_nona <- na.omit(all)   ### remove all na observations
 
 
-### remove all sims that never went extinct or extinct in first time step
+### Generate a version with no persistent simulations (remove all sims that never went extinct or extinct in first time step
 
-#keep <- !is.na(all$extinction_yrs)
+keep <- !is.na(all$extinction_yrs)
+length(which(keep))   # 20126 simulations remaining
+nrow(all)-length(which(keep))   # 54805 sims did not undergo global extinction within the simulation period
 
-#length(which(keep))
+all_extinct <- all[keep,]     # remove the ca. 55k simulations that were not plausible.
 
-#all <- all[keep,]     # remove the ca. 55k simulations that were not plausible. 
 
-  # explore any remaining NAs in the data frame
+  # explore any remaining NAs in the data frame, after removal of the non-extinctions...
+remaining.nas <- all_extinct[which(is.na(all_extinct),arr.ind=TRUE)[,1],]
 
-#remaining.nas <- all[which(is.na(all),arr.ind=TRUE),]
+nrow(remaining.nas)     # 240 simulations with NAs for dist_centroid and dist_fossil
+remaining.nas$dist_fossil
+remaining.nas$dist_centroid
+tail(remaining.nas)
 
-#nrow(remaining.nas)     # 480 simulations with NAs for dist_centroid and dist_fossil
+
+
+
 
 ####################
-# LOAD REAL WORLD DATA
+# LOAD REAL-WORLD DATA 
+
+# targets for matching with simulated data- for ABC
 ####################
 
+setwd(GENETIC_TARGETS_DIR)
+  
     # load data on effective population size from genetic data
-gendat <- read.csv("E:\\MammothResults\\ABCAnalysisTargets\\Genetic\\Mammoth_Ne.csv", header = T)
+eff_popsize <- read.csv("Mammoth_Ne.csv", header = T)
 
-   # load data on extinction date from the fossil record, interpolated to entire range
-#extdat <- read.csv("E:\\MammothResults\\ABCAnalysisTargets\\Fossil\\interprolated_estimate_xyz.csv", header = T)
 
-  # load data on extinction date from the fossil record, only fossil locations... 
-extdat <- read.csv("E:\\MammothResults\\ABCAnalysisTargets\\Fossil\\Barnoski_matched_estimates_fossils.csv", header = T)
-extdat_fossilsites <- extdat[extdat$Fossil.Data==1,]
+setwd(FOSSIL_TARGETS_DIR)
 
-last.locations <- extdat[which(extdat$Ext==min(extdat$Ext)),c(1,2)]
+  # load data on extinction date from the fossil record, only fossil locations... INTERPOLATED
+extinct_date <- read.csv("Barnoski_matched_estimates_fossils.csv", header = T)
+
+extinct_date$Mammoth_estimates.CI.Barnoski._Long[which(extinct_date$Mammoth_estimates.CI.Barnoski._Long<0)]<- 180+(180 - abs(extinct_date$Mammoth_estimates.CI.Barnoski._Long[which(extinct_date$Mammoth_estimates.CI.Barnoski._Long<0)]))
+
+
+  # Generate a version that has extinction date only for sites with fossil records (not interpolated)
+extinct_date_fossilsites <- extinct_date[extinct_date$Fossil.Data==1,]
+
+     # final locations of extinction, observed
+last.locations <- extinct_date[which(extinct_date$Ext==min(extinct_date$Ext)),c(1,2)]
 
 names(last.locations) <- c("X","Y")
 
-
-
-
-## plot out the real-world data
-
-
+hist(extinct_date$Ext)
 
 ####################
 # OBSERVED STATISTICS FOR MATCHING WITH SIMULATION RESULTS
@@ -97,6 +321,8 @@ test.statistics.obs
 
 ####################
 # SET UP VARIABLEs FOR ABC
+
+# All variable (estimable) parameters and all summary statistics for matching with data
 ###################
 
       #### What is the multivariate parameter space we are attempting to estimate?
@@ -135,82 +361,66 @@ test.statistics <- c(
 test.statistics
 
 
+
+### NOTES: which summary statistics to use??
+
 ## use just coefficient 1 (abundance by itself) 
-
 ## timing of extinction is critical
-
 ## play around with both distances but don't use both...
-
 ## pattern by itself
-
 ## pattern with extinction?   bring NAs in?
-
-
-
-
-
-#####################
-# VISUALIZE PRIORS (check for uniformity- don't need to run this every time)
-#####################
-
-## plot parameters 
-visualize.priors <- function(){
-  par(mfrow=c(2, 3),ask=TRUE)
-  
-  for(i in 1:length(estimable.params)){
-    hist(all[,estimable.params[i]], breaks = 50,main=estimable.params[i])
-  }
-}
-  
-# visualize.priors()
 
 
 #####################
 # PERFORM BASIC VISUALIZATIONS AND DATA CHECKS
 #####################
  
+### VISUALIZE TEST STATISTICS  (with targets overlaid)
 
-
-   # prepare data for ABC
-
-prepareForABC <- function(data=all,subset=c(1,3)){
-  par.sim <<- data[,estimable.params]     # samples run from parameter space 
-  stat.sim <<- scale(data[,test.statistics[subset],drop=FALSE])    # statistics to match with the real data
-  stat.obs <<- test.statistics.obs[test.statistics[subset]]
+par(mfrow=c(2,3))
+for(i in test.statistics){
+  hist(all[,i],main=i)
+  abline(v=test.statistics.obs[i],col="green",lwd=2)
 }
 
-prepareForABC(all,subset=c(1:6))
 
+### VISUALIZE PRIORS (check for uniformity- don't need to run this every time)
 
-head(stat.sim)
-
+visualize.priors()
 
 ####################
 # SELECT SUMMARY STATISTICS
 ####################
 
-
-### remove all na observations
-
-all_nona <- na.omit(all)
-
-prepareForABC(all_nona,subset=c(1:6))
-
-selectstats <- abctools::selectsumm(test.statistics.obs, par.sim, 
-                                     stat.sim, ssmethod =AS.select,
-                                     final.dens = FALSE)
-
-selectstats
-
 ?selectsumm
 
+prepareForABC(all_nona,subset=c(1:6),standardized = TRUE)
+
+selectstats <- abctools::selectsumm(test.statistics.obs, par.sim, 
+                                     stat.sim, ssmethod =mincrit,  # AS.select,    #  
+                                     final.dens = FALSE)
+
+# which summary statistics were selected by the "selectsumm" algorithm?   # # best subset is variables 1 and 3?
+
+colnames(selectstats$best) <- test.statistics
+
+selectstats$best
+
+#### make final selections...
+
+test.statistics
 
 
+#prepareForABC(all,subset=c(1,2,4,6))
 
-prepareForABC(all,subset=c(1,3))   # go back to using all observations.
+
+   ## here we subset the targets to the best set identified above
+prepareForABC(all,subset=c(5,6),standardized=T)
 
 
-# best subset is variables 1 and 3...
+head(par.sim)
+head(stat.sim)   # make sure the right summary statistics are being used
+stat.obs
 
 
 #####################
@@ -223,22 +433,25 @@ prepareForABC(all,subset=c(1,3))   # go back to using all observations.
 #####
 # ABC analysis
 #####
-rej <- abc(target=stat.obs, param=par.sim, sumstat=stat.sim, tol=.01, method ="neuralnet")   # rejection  # loclinear
+rej <- abc(target=stat.obs, param=par.sim, sumstat=stat.sim, tol=.01, 
+           method ="neuralnet", numnet=20, sizenet=10,trace=T,maxit=1000,lambda = c(0.0001,0.001,0.01))   # rejection  # loclinear
 
+# NOTE: neural net method seems to perform the best...
 
+   # explore the abc object...
 head(rej$adj.values)
 head(rej$unadj.values)
 rej$weights
 
-rej$dist
+rej$dist    # this is the euclidean distance between simulation results and observations 
 
 ######     
  # summary and diagnostic plots
 ######
 
-plot(rej,param=par.sim)
+plot(rej,param=par.sim)     # visualize all priors and posteriors
 
-rej$ss
+rej$ss  # all simulation runs that were kept for the posterior
 
     ### credible intervals
 summary(rej)
@@ -247,172 +460,61 @@ summary(rej)
 
     ### cross validation (can take a while with neural net)
 
-cv.res.reg <- cv4abc(data.frame(Density=par.sim$DENSITY,Allee=par.sim$ALLEE), stat.sim,
-                     nval=20, tols=c(0.005,0.01), method="rejection")
+### the cross validation does NOT use the observed targets. Instead, it takes simulated data, one at a time, as
+#    the "observed" targets, and uses the remaining simulations to perform an ABC analysis with the new
+#    "observed" summary statistics. 
+#    this way, we can look at the overall quality of the ABC (ability to estimate selected parameters) 
+#    if the algorithm is good (summary stats are informative) then the parameters estimated by ABC should
+#    match the parameters of the simulation that in fact generated the psuedo-observed data... 
+
+cv.res.reg <- cv4abc(data.frame(Density=par.sim$DENSITY,Allee=par.sim$ALLEE,Jultemp=par.sim$jul_temp_median), stat.sim,
+                     nval=20, tols=c(0.01,0.05),   # method="rejection")
+                     method ="neuralnet", numnet=10, sizenet=10,trace=F,maxit=500,lambda = c(0.0001,0.001,0.01)) 
 plot(cv.res.reg)
 
 summary(cv.res.reg)   # good summary of model performance
 
 
 
+#############################
+# VISUALIZE ABUNDANCE TRAJECTORIES AND EXTINCTION TIMES
+#############################
 
 ### find the best simulations to explore further
 
 if(length(test.statistics)>1){
   ndx <- as.numeric(rownames(rej$ss))
-  mins <- apply(as.matrix(rej$ss,min),2,min)
+  ranking <- order(apply(as.matrix(rej$ss,min),1,sum))
+  ndx <- ndx[ranking]
+  ndx_min <- as.numeric(names(which.min(apply(as.matrix(rej$ss,min),1,sum))))
 }else{
   ndx <- as.numeric(names(rej$ss))
-  ndx_min <- as.numeric(names(which(rej$ss == min(rej$ss), arr.ind = TRUE)))[1]
-  mins <- apply(as.matrix(rej$ss,min),2,min)
+  ranking <- order(as.vector(rej$ss))
+  ndx <- ndx[ranking]
+  #ndx_min <- as.numeric(names(which(rej$ss == min(rej$ss), arr.ind = TRUE)))[1]
+  #mins <- apply(as.matrix(rej$ss,min),2,min)
 }
 
 
-
-
-#############################
-# VISUALIZE ABUNDANCE TRAJECTORIES
-#############################
-
-index <- ndx[1]
-index <- ndx_min
+index <- ndx[1]   # one of a set of all models used in the posterior
+index <- ndx_min   # the best fit model
 
 target <- all[index,]$model
-#toPlot <- "ABUNDANCE"
-toPlot <- "EXTINCTION_DATE"
 
-visualize <- function(target=target,toPlot=toPlot){
-  
-  if(toPlot="EXTINCTION_DATE"){
-    matches <- as.numeric(unlist(regmatches(target, gregexpr("[[:digit:]]+", target))))
-    nichebreadth <- matches[1]
-    sample <- matches[2]
-    
-    
-    if(toPlot=="ABUNDANCE") filename <- sprintf("NicheBreadth%i_TotAbund_output_alldata.csv",nichebreadth)
-    
-    setwd(wd_results)
-    getwd()
-    
-    list.files()
-    
-    
-    abund <- read.csv(filename, header = T)    # if(!"abund"%in%ls(name=.GlobalEnv))  
-    
-    head(abund[,2000:2010])
-    
-    time<- rev(seq(from =0, to =80000, by = 25))
-    
-    timeall <- time[2361:2928]
-    timebreak1 <- time[2708:2928]
-    timebreak2 <- time[2361:2707]
-    
-    ## Provide row id of simulation of interest
-    abundall <- as.numeric(abund[sample,2362:2929])     
-    abundbreak1 <- as.numeric(abund[sample,2709:2929])
-    abundbreak2 <- as.numeric(abund[sample,2362:2708])
-    
-    graphics.off()
-    plot(timeall, abundall, pch = 16, cex = 0.2, col = "blue", main = "Change in Ne", 
-         ylim=c(0,min(1000000,max(abundall+10000))),xlab = "Time (year)", ylab = "Abundance")   #  ,
-    
-    break1coef <- round(lm(abundbreak1~timebreak1)$coefficients[2],2) 
-    break2coef <- round(lm(abundbreak2~timebreak2)$coefficients[2],2)
-    
-    abline(lm(abundbreak1~timebreak1))
-    abline(lm(abundbreak2~timebreak2))
-  
-    
-    ## Extinction presumed to have occurred by 3000 years ago; and only interested in records after 21,000 years ago
-    time2 <- (gendat[61:420,1])
-    abund2 <-(gendat[61:420,2])
-    data2 <- cbind(time2, abund2)
-    
-    points(time2, abund2, cex = 0.1, col = "red",pch=20)
-  }
-  
-
-  if(toPlot="EXTINCTION_DATE"){
-    matches <- as.numeric(unlist(regmatches(target, gregexpr("[[:digit:]]+", target))))
-    nichebreadth <- matches[1]
-    sample <- matches[2]
-    
-    colname <- sprintf("NicheBreadth%i_LHS_Sample%i.mp",nichebreadth,sample)
-    
-    filename <- sprintf("NicheBreadth%i_FinalYear_output_alldata_formatted.csv",nichebreadth)
-    
-    setwd(wd_results)
-    
-    extinct <- read.csv(filename, header = T)    # if(!"abund"%in%ls(name=.GlobalEnv))  
-    
-    xcords <- extinct[,1]
-    ycords <- extinct[,2]
-    head(extinct[,1:10])
-    
-    thissample <- extinct[,colname]
-    
-    time<- rev(seq(from =0, to =80000, by = 25))
-    
-    ext.time <- time[thissample]
-    
-    exttime_scaled <- ext.time/80000
-    
-    cols <- colorRamp(c("blue","red"), bias = 1, space = c("rgb"),
-                      interpolate = c("linear"), alpha = FALSE)(exttime_scaled)
-    
-    
-    #map <- get_map(location = 'Asia', zoom = 3)
-    newmap <- getMap(resolution = "low")
-    #ggmap(map)
-    
-    
-    
-    par(mfrow=c(2,1))
-    plot(newmap,xlim = c(20, 180),
-         ylim = c(30, 71),
-         asp = 1,
-         main="simulated"
-         )
-    points(xcords,ycords,pch=20,cex=0.01,col=cols)
-    
-    
-    plot(newmap,xlim = c(20, 180),
-         ylim = c(30, 71),
-         asp = 1,
-         main="real"
-    )
-    cols <- colorRamp(c("blue","red"), bias = 1, space = c("rgb"),
-                      interpolate = c("linear"), alpha = FALSE)(extdat$Ext/80000)
-    
-    points(extdat$Mammoth_estimates.CI.Barnoski._Long,extdat$Mammoth_estimates.CI.Barnoski._Lat,pch=20,cex=0.01,col=cols)    
-    
-    
-    points(last.locations)
-    
-    
-     ### location of final extinction
-    ndx <- which(ext.time==min(ext.time,na.rm=T))
-    xcords_lastext <- extinct[ndx,1]
-    ycoord_lastext <- extinct[ndx,2]
-    
-    plot(newmap,xlim = c(50, 219),
-         ylim = c(30, 71),
-         asp = 1,
-         main="real"
-    )
-    points(xcords_lastext,ycoord_lastext,pch=20,cex=3,col="black")
-    points(last.locations)
-    
-  }  
-  
-}
+#toPlot <-  "EXTINCTION_DATE"  # "ABUNDANCE"     # 
 
 
+### NOTE on color scheme: red is >70k time to extinction. 
+                      # orange is from 40 to 70k
+                      # yellow is from 20 to 40k
+                      # green is from 15 to 20k
+                      # blue is from 10 to 15k
+                      # purple is from 5 to 10k
+                      # indigo is from 4-5k
+                      # black is from 3-4k
 
-
-visualize(target,toPlot)
-
-
+graphics.off()
+visualize(target)
 
 
 
@@ -420,49 +522,9 @@ visualize(target,toPlot)
 # VISUALIZE POSTERIORS
 #####################
 
-visualize.posteriors <- function(){
-  par(mfrow=c(2, 3),ask=TRUE)
-  
-  posterior_ndx <- as.numeric(rownames(as.matrix(rej$ss))) 
-  all_post <- all[posterior_ndx,]
-  for(i in 1:length(estimable.params)){
-    hist(all_post[,estimable.params[i]], breaks = 50,main=estimable.params[i])
-  }
-}
 
-visualize.posteriors()
-
-
-
-
-?abc
-
-
-
-
-
-
-
-
-
-
-all$
-
-
-
-
-
-## ABC with local linear regression correction without/with correction
-## for heteroscedasticity
-##
-
-lin <- abc(target=stat.obs, param=par.sim, sumstat=stat.sim, tol=.1, hcorr = FALSE, method = "loclinear", transf=c("none","log"))
-
-
-
-linhc <- abc(target=stat.obs, param=par.sim, sumstat=stat.sim, tol=.1, method =
-               "loclinear", transf=c("none","log"))
-
+    # only works for elimination method
+ # visualize.posteriors()
 
 
 
@@ -477,35 +539,9 @@ linhc <- abc(target=stat.obs, param=par.sim, sumstat=stat.sim, tol=.1, method =
 ## Note: the neural network method seems to be the best- local linear does not work at all!
 
 
-
-library(abc)
-data(human)
-cv.modsel <- cv4postpr(models, stat.3pops.sim, nval=50, tol=.01, method="mnlogistic")   # Not applicable
-plot(cv.modsel)    # not applicable
-
-stat.italy.sim <- subset(stat.3pops.sim, subset=models=="bott")    # 
-cv.res.reg <- cv4abc(data.frame(Na=par.italy.sim[,"Ne"]), stat.italy.sim,
-                       nval=200, tols=c(.005,.001), method="loclinear")
-plot(cv.res.reg, caption="Ne")
-
-res <- abc(target=stat.voight["italian",], param=data.frame(Na=par.italy.sim [, "Ne"]),
-             + sumstat=stat.italy.sim, tol=0.005, transf=c("log"), method="neuralnet")
-plot(res, param=par.italy.sim [, "Ne"])
-
-
-
-
-
-
-
-
-
-
-
-
-
 ##### TESTS
 
 # does removing nas do anything to the results? it shouldn't!
+# does standardizing the targets have an effect?
 
 

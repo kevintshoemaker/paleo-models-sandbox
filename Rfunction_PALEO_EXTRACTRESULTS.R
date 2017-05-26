@@ -23,7 +23,9 @@
 # MCP over time (maybe save for later)
 
 
-ExtractMPresults <- function(f=i,masterDF=masterDF,NicheBreadth=NicheBreadth,doMCP=TRUE){
+ExtractMPresults <- function(f=1,masterDF=masterDF,NicheBreadth=NicheBreadth,doMCP=TRUE,suspendtime=1){
+  
+  Sys.sleep(suspendtime)
   
   ## set up the new folder to store the MP file and associated KCH files... (specifies the niche breadth)
   thisFolder <- sprintf("%s\\Sample_%s\\LHS_Sample%s",MP_DIRECTORY,NicheBreadth,f)
