@@ -178,6 +178,7 @@ LoadPackages <- function(){
   loadPackage("doParallel")
   loadPackage("adehabitatHR")
   loadPackage("sp")
+  loadPackage("data.table")
   
   # Read in the functions for reading and writing MP files, from Matt Lammens
   
@@ -363,7 +364,7 @@ specifyLHSParam <- function(paramslist,name,type,lb,ub){
 ## computes initial abundance, and moves KCH files into the necessary folder for processing (same folder where mp file is located)
 ###########
 
-writeKCH <- function(toFolder=thisFolder,NicheBreadth=40,Filenum = 1,density = 1000){
+writeKCH <- function(toFolder=thisFolder,r,Filenum = 1,density = 1000){
 	initabund <- numeric(NPOPS)
 	directoryname = sprintf("%s\\Sample_%s\\file_%s",KCH_DIRECTORY,NicheBreadth,Filenum)
 	setwd(directoryname)
@@ -375,7 +376,7 @@ writeKCH <- function(toFolder=thisFolder,NicheBreadth=40,Filenum = 1,density = 1
 	  K=round(K*density)   # convert to abundance
 	  initabund[i] = K[1]
 	  setwd(toFolder)
-	  write.table(K,file=KCHfilename,row.names=F,col.names=F)
+	  fwrite(data.frame(K=K),file=KCHfilename,row.names=F,col.names=F)  # write.table(K,file=KCHfilename,row.names=F,col.names=F)
 	}
 	return(initabund)
 }
