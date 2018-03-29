@@ -1,0 +1,10 @@
+{
+    "dialog-state" : {
+        "caseSensitive" : false,
+        "filePatterns" : [
+        ],
+        "path" : "E:/GIT/paleo-models-sandbox",
+        "query" : "write.table",
+        "regex" : false
+    }
+}

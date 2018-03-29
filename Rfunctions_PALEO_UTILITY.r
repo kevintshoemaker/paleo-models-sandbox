@@ -307,6 +307,7 @@ SetUpWorkspace <- function(){
   
   # save global params
   setwd(DATA_DIRECTORY)
+  if(!exists("NREPS")) NREPS=1
   save(NREPS,TIMESTEPS,GENTIME,MP_TEMPLATE,METAPOP_LOCATION,file="GlobalParams.RData")
   
   LoadPackages()  # load all packages
@@ -327,7 +328,7 @@ negexp <- function(distance,alpha, beta) {
 
 
 ###########
-## FUNCTION "LoadPackages"
+## FUNCTION "VisualizeDispersalFunction"
 ##
 ## Visualize basic dispersal function in Ramas...
 ###########
