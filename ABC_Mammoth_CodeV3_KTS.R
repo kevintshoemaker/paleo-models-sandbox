@@ -261,6 +261,7 @@ visualize <- function(target=target){
 # for testing
 target = "NicheBreadth70_LHS_Sample1.mp"
 
+
 MakeMovie <- function(target){
   
   setwd(SIM_RESULTS_DIR)
@@ -419,7 +420,105 @@ MakeMovie <- function(target){
 }  ### end function "MakeMovie"
 
 
+##################
+# MAKE EXTINCTION MOVIE
+##################
 
+
+target = "extinct_pattern_wghtmean_sealevel_noNA.csv"
+
+MakeMovie2 <- function(target){
+  
+  setwd(SIM_RESULTS_DIR)
+
+  ###########################
+  # READ DATA
+  ###########################
+  
+  extdat <- read.csv("extinct_pattern_wghtmean_sealevel_noNA.csv")
+  
+  ndx <- grep("model",names(extdat))
+  
+  targetmodel=2
+  
+  extdat2 <- extdat[,paste("model",targetmodel,sep="")]
+  
+  ###########################
+  # SET UP DIRECTORY
+  ###########################
+  
+  thisMOVIE_DIR <- sprintf("%s\\%s",getwd(),gsub("\\.csv","",target))
+  if(is.na(file.info(thisMOVIE_DIR)[1,"isdir"])) dir.create(thisMOVIE_DIR)
+  
+  setwd(thisMOVIE_DIR)
+  
+  #### remove figures that are not part of this simulation?
+  
+  fileyrs <- as.numeric(unlist(regmatches(list.files(), gregexpr("[[:digit:]]+", list.files()))))
+  notthissim <- fileyrs > TIMESTEPS
+  toremove <- list.files()[notthissim]
+  
+  if(any(notthissim)) file.remove(toremove)
+  
+  ################
+  # MAKE PLOTS
+  
+  width = 800
+  height= 300
+  
+
+  time<- rev(seq(from =0, to =80000, by = 500))
+  
+  t = 1
+  counter=1
+  for(t in 1:length(time)){
+    file = sprintf("ExtinctionMap_year%04d.tif",counter)
+    
+    tiff(file, width=width,height=height)   # revert this later!
+    
+    #colors <- c("red","orange","yellow","green","blue","purple","violet","black","black")
+    #colors <- viridis::plasma(9)
+    
+
+    xcords <- extdat$x
+    ycords <- extdat$y
+    
+    if(any(xcords<0)) xcords[which(xcords<0)] <- 180+(180 - abs(xcords[which(xcords<0)]))
+    
+    newmap <- getMap(resolution = "low")
+    
+    plot(newmap,xlim = c(20, 200),
+         ylim = c(30, 80),
+         asp = 1,
+         main=sprintf("%s years bp",time[t])
+    )
+    extant_vs_extinct <- ifelse(extdat2<time[t],1,2)
+    cols <- c("green","red")[extant_vs_extinct]
+    points(xcords,ycords,pch=20,cex=0.01,col=cols)
+    
+    
+    dev.off() 
+    counter=counter+1
+  }
+  
+  ## NOTE: need command line like this: ffmpeg -f image2 -framerate 2 -i AbundanceMap_year%03d.tif -s 500x500 test.avi -y
+  
+  # MAKING THE REAL MOVIE HERE! USE IMAGE MAGICK AND FFMPEG SOFTWARE  (https://blogazonia.wordpress.com/2016/01/19/making-a-movie-with-r/)
+  
+  
+  # create the movie
+  cmd_abundmov <- paste0("ffmpeg -f image2 -framerate 2 -i ExtinctionMap_year%04d.tif -s 800x300 ", 
+                         sprintf("%s\\ExtinctionMovie.avi",getwd())," -y")
+  
+  
+  #sink(tempfile())
+  system(cmd_abundmov,ignore.stdout = T,ignore.stderr = T)
+  
+  #sink()
+}  ### end function "MakeMovie"
+
+
+MakeMovie2(target)
 
 ####################
 # LOAD SIMULATIONs

@@ -187,7 +187,8 @@ for(nb in NicheBreadths){     # Loop through niche breadths
                      .packages = c("sp","adehabitatHR","geosphere"),
                      .errorhandling=c("pass")
   ) %dopar% {   
-    ExtractMPresults(f=i,masterDF=masterDF,NicheBreadth=NicheBreadth,doMCP=TRUE,suspendtime=i)
+    #ExtractMPresults(f=i,masterDF=masterDF,NicheBreadth=NicheBreadth,doMCP=TRUE,suspendtime=i)
+    ExtractMPresults2(f=i,masterDF=masterDF,NicheBreadth=NicheBreadth,doMCP=TRUE,suspendtime=i)
   }
   
 }   # end loop through niche breadths

@@ -176,7 +176,7 @@ ExtractMPresults <- function(f=1,masterDF=masterDF,NicheBreadth=NicheBreadth,doM
     eval(parse(text=sprintf("rm(%s)",name)))   # remove from memory   
     
     #}  # end loop through files...
-    name
+    #name
   }, warning = function(w){
     as.character(w)
   }, error = function(e){
@@ -200,6 +200,142 @@ ExtractMPresults <- function(f=1,masterDF=masterDF,NicheBreadth=NicheBreadth,doM
   
 }  # end function 'ExtractMPresults'   
 
+
+#####################
+#  NEW FUNCTION- MASK OUT ZERO-K CELLS 
+#
+#     also, output only a csv file with abundance trajectory for each grid cell
+####################
+
+
+# for testing
+target = "NicheBreadth70_LHS_Sample1.mp"
+
+
+ExtractMPresults2 <- function(f=1,masterDF=masterDF,NicheBreadth=NicheBreadth,doMCP=TRUE,suspendtime=1){
+  
+  Sys.sleep(suspendtime)
+  
+  ## set up the new folder to store the MP file and associated KCH files... (specifies the niche breadth)
+  thisFolder <- sprintf("%s\\Sample_%s\\LHS_Sample%s",MP_DIRECTORY,NicheBreadth,f)
+  
+  ############
+  # SET UP STORAGE STRUCTURES FOR KEY RESULTS METRICS
+  ############
+  SimInfo <- masterDF[f,]
+  SimInfo <- as.list(SimInfo)   # coerce to list 
+  MPFilename <- as.character(SimInfo$MPFilename)
+  name <- gsub(x=MPFilename,pattern=".mp",replacement="",fixed=T)
+  
+  
+  ## matrix for storing abundance over time for each grid cell
+  PopAbund <- matrix(0,nrow=NPOPS,ncol=TIMESTEPS)
+  
+  ###########################
+  # GET RESULTS
+  ###########################
+  
+  result = tryCatch({   ## try to catch errors! 
+    ### step 1: set up the MP file connection 
+    setwd(thisFolder)
+    MPcon <- file(MPFilename, 'r')
+    
+    # while loop: find the string "Pop. 1" [indicates the beginning of the population results]
+    stringToFind <- "Pop. 1"
+    basendx <- 0
+    CHUNKSIZE <- 1000		
+    
+    
+    while (length(input <- readLines(MPcon, n=CHUNKSIZE)) > 0){    # read in chunks until population results are found
+      
+      temp <- grep(stringToFind,input)
+      if(length(temp)>0){ 
+        ndx <- basendx + temp
+        pushBack(input[(temp):CHUNKSIZE],MPcon)       # reset the file to where Pop. 1 began
+        break
+      } 
+      basendx <- basendx + CHUNKSIZE
+      
+    }   # end while loop
+    
+    # read in the population abundances over time
+    for(pop in 1:NPOPS){
+      stringToFind <- sprintf("Pop. %s",pop)
+      temp <- readLines(MPcon,1)
+      if(temp!=stringToFind){
+        print(paste("ERROR!","Population #",pop))
+        break
+      }
+      input <- readLines(MPcon, n=TIMESTEPS)
+      Nvec <- sapply( strsplit(input, " "), function(t) as.numeric(t[1]))
+      eval(parse(text=sprintf("PopAbund[%s,] <- Nvec",pop)))	   # RESULT: POP ABUNDANCE             
+    }   # end loop through pops 
+    
+    if(isOpen(MPcon)){ 
+      close.connection(MPcon)
+      rm("MPcon")
+    }
+    
+    if(exists("MPcon")){
+      rm("MPcon")
+    }
+    
+    
+    ####################
+    # READ IN KCH FILES
+    ####################
+    
+    Kmat <- matrix(0,nrow=NPOPS,ncol=TIMESTEPS)
+    i=1
+    for(i in 1:NPOPS){
+      KCHfilename = sprintf("pop_%s.kch",i)
+      temp <- fread(KCHfilename,header=F)
+      Kmat[i,] = setDF(temp)[,1]
+    }
+    
+    
+    ####################
+    # MASK ABUNDANCE BY ZERO K
+    ####################
+    
+    maskout <- which(Kmat==0,arr.ind=T)
+    #mask2 <- apply(Kmat,c(1,2),function(t) ifelse(t>0,1,0))   # alternative- much less efficient!
+    
+    PopAbund2 <- PopAbund
+    PopAbund2[maskout] <- 0
+    
+    #PopAbund3 <- PopAbund * mask2   # test- passed
+    
+    ####################
+    # SAVE RESULTS TO HARD DISK AND REMOVE FROM RAM 
+    ####################
+    setwd(thisFolder)
+    
+    filename <- sprintf("%s_popAbund.csv",name)
+    fwrite(as.data.frame(PopAbund2),file=filename)
+    
+  }, warning = function(w){
+    as.character(w)
+  }, error = function(e){
+    setwd(thisFolder)
+    filename <- sprintf("%s.RData",name)
+    eval(parse(text=sprintf("%s <- e",name)))
+    eval(parse(text=sprintf("save(%s,file=filename)",name)))   # save to disk
+    eval(parse(text=sprintf("rm(%s)",name)))   # remove from memory
+    as.character(e)
+  }, finally = {
+    PopAbund <- NULL   ## remove from memory
+    if(exists("MPcon")){
+      close.connection(MPcon)
+      rm("MPcon")
+    }
+  })   # end tryCatch
+  
+  #closeAllConnections()
+  ### return something...
+  return(result)
+  
+}  # end function 'ExtractMPresults'   
 
 
 
