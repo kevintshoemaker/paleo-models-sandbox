@@ -175,16 +175,16 @@ for(nb in NicheBreadths){     # Loop through niche breadths
   #######################
   ## objects to export to each node in the cluster
   
-  functionlist <- c('mp.read','mp.read.results')   # , 'mp.write'
+  functionlist <- c()   # , 'mp.write'
   filelist <- c('masterDF','NicheBreadth','NPOPS','TIMESTEPS','MP_DIRECTORY','GridCellAttributes')  #'MP_DIRECTORY','template','GENTIME','humanArrival.df','EXE_DIRECTORY','DLL_FILENAME','dispersalFunc.df','DistClasses','NPOPS','DistBins',
   
   objectlist <- c(functionlist,filelist)   # full list of objects to export
   #packagelist <- c()
   
   
-  all.mps <- foreach(i = c(1,2,3,4,6,7,8), #1:nrow(masterDF),
+  all.mps <- foreach(i = c(1), #1:nrow(masterDF),
                      .export=objectlist,
-                     .packages = c("sp","adehabitatHR","geosphere"),
+                     .packages =c("data.table"),     #c("sp","adehabitatHR","geosphere"),
                      .errorhandling=c("pass")
   ) %dopar% {   
     #ExtractMPresults(f=i,masterDF=masterDF,NicheBreadth=NicheBreadth,doMCP=TRUE,suspendtime=i)
@@ -198,6 +198,40 @@ for(nb in NicheBreadths){     # Loop through niche breadths
 
 
 
+
+
+################
+# EXTRACT HARVEST RESULTS
+################
+
+template <- ReadMPTemplate()   # read the MP template
+
+nb=70  # for testing...
+for(nb in NicheBreadths){     # Loop through niche breadths
+  
+  NicheBreadth <- nb   # set the current niche breadth
+  
+  registerDoParallel(cores=num_cores)    # make the cluster
+  
+  #######################
+  ## objects to export to each node in the cluster
+  
+  functionlist <- c('mp.read', 'mp.write')
+  filelist <- c('MP_DIRECTORY','template','GENTIME','humanArrival.df','EXE_DIRECTORY','DLL_FILENAME',
+                'dispersalFunc.df','DistClasses','NPOPS','DistBins','masterDF','NicheBreadth')
+  
+  objectlist <- c(functionlist,filelist)   # full list of objects to export
+  #packagelist <- c()
+  
+  all.files <- foreach(i = 1:nrow(masterDF),
+                     .export=objectlist,
+                     #.packages = c("R2WinBUGS"),
+                     .errorhandling=c("pass")
+  ) %dopar% {   
+    GetHarvest(f=i,masterDF=masterDF,NicheBreadth=NicheBreadth)  
+  }
+  
+}   # end loop through niche breadths
 
 
 

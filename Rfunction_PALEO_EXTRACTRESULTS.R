@@ -289,7 +289,7 @@ ExtractMPresults2 <- function(f=1,masterDF=masterDF,NicheBreadth=NicheBreadth,do
     i=1
     for(i in 1:NPOPS){
       KCHfilename = sprintf("pop_%s.kch",i)
-      temp <- fread(KCHfilename,header=F)
+      temp <- data.table::fread(KCHfilename,header=F)
       Kmat[i,] = setDF(temp)[,1]
     }
     
@@ -312,7 +312,7 @@ ExtractMPresults2 <- function(f=1,masterDF=masterDF,NicheBreadth=NicheBreadth,do
     setwd(thisFolder)
     
     filename <- sprintf("%s_popAbund.csv",name)
-    fwrite(as.data.frame(PopAbund2),file=filename)
+    data.table::fwrite(as.data.frame(PopAbund2),file=filename)
     
   }, warning = function(w){
     as.character(w)

@@ -7,6 +7,85 @@
 
 
 ###########
+## FUNCTION "GetHarvest"
+##
+## Uses params from the latin hypercube samples and the per-cell abundance in each time step to estimate the total expected number harvested each year
+##     NOTE: this results in a CSV file in which each column represents the initial year of each 25-year generation. Each row represents a
+##     single grid cell
+###########
+
+# template <- ReadMPTemplate()
+
+GetHarvest <- function(f=1,masterDF=masterDF,NicheBreadth=70){
+  
+  filename_mp <- as.character(masterDF$MPFilename[f])
+  filename_noext <- gsub("\\.mp","",filename)
+  
+  ## folder with the abundance CSV file
+  thisFolder <- sprintf("%s\\Sample_%s",MP_DIRECTORY,NicheBreadth)
+  
+  setwd(thisFolder)
+  
+  HarvParams <- c(masterDF$HARV[f],masterDF$HARVZ[f],masterDF$HUMAN[f],masterDF$DENSITY[f])
+  names(HarvParams) <- c("HARV","HARVZ","HUMAN","DENSITY")
+  
+  mpstarttime <- TIMESTEPS*GENTIME   # KTS: look into the discrepancy between the mp template timesteps (2468) and the # of generations actually run (3200)
+  
+  mpstarttime2 <- template$mp.file$MaxDur*GENTIME  # KTS: the way it seems to be in the MAKEMP function... this gives a different start date for harvest
+  
+  i=1
+  #harvstarttime <- numeric(NPOPS)
+  harvstarttime2 <- numeric(NPOPS)
+  for(i in 1:NPOPS){
+    temp <- humanArrival.df$year_min[i] + masterDF$HUMAN[f]*(humanArrival.df$year_max[i]-humanArrival.df$year_min[i])
+    #harvstarttime[i] <- round((mpstarttime - temp)/GENTIME) + 4  # KTS: added "+4" to make human effect have a time lag of 100 years i.e., 5 generations 
+    harvstarttime2[i] <- round((mpstarttime2 - temp)/GENTIME) + 4 
+  }
+  
+  abund_filename <- sprintf("%s_popAbund.csv",filename_noext)
+  temp <- data.table::fread(abund_filename,header=T)
+  temp <- setDF(temp)
+  PopMat <- as.matrix(temp)
+  
+    # compute expected harvest (snapshot of number harvested that year, so only 1 year out of every 25 years is considered)
+  #Harv1 <- matrix(0,nrow=nrow(PopMat),ncol=ncol(PopMat))    # what it should be
+  Harv2 <- matrix(0,nrow=nrow(PopMat),ncol=ncol(PopMat))    # what may have been modeled by accident
+  
+  HarvG <- 0.4
+  i=3000
+  for(i in 1:NPOPS){
+    nonzeroes <- PopMat[i,]>0
+    PreyDensity <- numeric(TIMESTEPS)
+    PreyDensity[nonzeroes] <- PopMat[i,nonzeroes] /HarvParams['DENSITY'] 
+    PreyZ <- numeric(TIMESTEPS)
+    PreyZ[nonzeroes] <- PreyDensity[nonzeroes]^HarvParams['HARVZ'] # This is now Density^z
+    FuncResp <- numeric(TIMESTEPS)
+    FuncResp[nonzeroes] <- (HarvParams['HARV'] * PreyZ[nonzeroes]) / (HarvG + PreyZ[nonzeroes])
+    Rharvest <- numeric(TIMESTEPS)
+    Rharvest[nonzeroes]<- FuncResp[nonzeroes]/PreyDensity[nonzeroes]
+    #Harv1[i,harvstarttime[i]:TIMESTEPS] <- round(Rharvest[harvstarttime[i]:TIMESTEPS]*PopMat[i,harvstarttime[i]:TIMESTEPS])
+    Harv2[i,harvstarttime2[i]:TIMESTEPS] <- round(Rharvest[harvstarttime2[i]:TIMESTEPS]*PopMat[i,harvstarttime2[i]:TIMESTEPS])
+  }
+  
+  ####################
+  # SAVE RESULTS TO DISK
+  ####################
+  setwd(thisFolder)
+  
+  allyears <- seq(from=mpstarttime,to=1,by=-1*GENTIME)
+  colnames(Harv2) <- allyears
+  
+  # filename_out <- sprintf("%s_harvest1.csv",filename_noext)
+  # data.table::fwrite(as.data.frame(Harv1),file=filename_out)
+  # 
+  filename_out <- sprintf("%s_harvest2.csv",filename_noext)
+  data.table::fwrite(as.data.frame(Harv2),file=filename_out)
+  
+}
+
+
+
+###########
 ## FUNCTION "MakeLHSSamples"
 ##
 ## Samples from the uniform LHS and translates into desired parameter space

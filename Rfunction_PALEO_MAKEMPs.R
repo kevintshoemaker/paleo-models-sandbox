@@ -55,6 +55,9 @@ MakeMPfile <- function(f=1,masterDF=masterDF,NicheBreadth=70,suspendtime=1){    
     poplist2$UD4 <- 0    # this is the "begin harvest year" parameter
     poplist2$UD5 <- round(masterDF$DENSITY[f])   # KTS: did I do this right?
     
+    # time steps (make sure that template has the appropriate number of time steps)
+    template$mp.file$MaxDur <- TIMESTEPS   
+    
     i=1
     for(i in 1:NPOPS){
   
@@ -78,7 +81,7 @@ MakeMPfile <- function(f=1,masterDF=masterDF,NicheBreadth=70,suspendtime=1){    
       poplist1[[i]]$IncludeInSum <- TRUE
       poplist2$IncludeInSum[i] <- TRUE
       
-                # SET INIT HARVEST
+                # SET INIT HARVEST              [KTS: something's strange here- the template has only 2468 time steps in this case... but there are 3201 time steps in the simulation]
       mpstarttime <- template$mp.file$MaxDur*GENTIME
       harvstarttime <- humanArrival.df$year_min[i] + masterDF$HUMAN[f]*(humanArrival.df$year_max[i]-humanArrival.df$year_min[i])
       poplist2$UD4[i] <- round((mpstarttime - harvstarttime)/GENTIME) + 4  # KTS: added "+4" to make human effect have a time lag of 100 years i.e., 5 generations     # KTS: this is now "UD4"
